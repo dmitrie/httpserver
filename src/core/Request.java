@@ -138,10 +138,10 @@ public class Request {
   }
 
   public void setProtocol(String protocol) {
-    if (!getProtocol().matches("HTTP/\\d\\.\\d"))
+    if (!protocol.matches("HTTP/\\d\\.\\d"))
       throw new HttpError(BAD_REQUEST);
 
-    if (!Arrays.asList("HTTP/1.0", "HTTP/1.1").contains(getProtocol()))
+    if (!Arrays.asList("HTTP/1.0", "HTTP/1.1").contains(protocol))
       throw new HttpError(NOT_IMPLEMENTED);
 
     this.protocol = protocol;
