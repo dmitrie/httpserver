@@ -1,32 +1,32 @@
+package core;
+
 import java.io.UnsupportedEncodingException;
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.stream.Collectors;
 
 public class Response {
-  private String protocol;
-  private String responseCode;
-  private Map<String, String> headers = new HashMap<>();
+  private Request request;
+  private HttpStatusCode statusCode;
+  private Map<String, String> headers = new LinkedHashMap<>();
   private String body;
   private String encoding = "UTF-8";
 
-  public Response(String protocol) throws UnsupportedOperationException {
-    if (!protocol.equals("HTTP/1.1"))
-      throw new UnsupportedOperationException("Server supports only HTTP/1.1 protocol");
-    this.protocol = protocol;
+  public Response(Request request) throws UnsupportedOperationException, UnsupportedEncodingException {
+    this.request = request;
+    if (request.getErrorCode() != null)
+      setErrorBodyAndHeaders(request.getErrorCode());
   }
 
-  public void setError(int code) throws UnsupportedEncodingException {
-    switch (code) {
+  public void setErrorBodyAndHeaders(HttpStatusCode code) throws UnsupportedEncodingException {
+    setStatusCode(code);
+
+    switch (code.getCode()) {
       case 404:
         setBody("<div style=\"text-align: center;\"><h1 style=\"color: red;\">404 Error</h1><br>File not found</div>");
-        setResponseCode("404 Not Found");
-        break;
-      case 500:
-        setBody("500 Internal Server Error");
-        setResponseCode("500 Internal Server Error");
         break;
       default:
+        setBody(code.toString());
         break;
     }
 
@@ -44,15 +44,11 @@ public class Response {
   }
 
   public void setHeader(String header, String value) {
-    getHeaders().put(header, value);
+    getHeaders().put(header.toUpperCase(), value);
   }
 
-  public String getProtocol() {
-    return protocol;
-  }
-
-  public String getResponseCode() {
-    return responseCode;
+  public HttpStatusCode getStatusCode() {
+    return statusCode;
   }
 
   public Map<String, String> getHeaders() {
@@ -67,12 +63,12 @@ public class Response {
     return encoding;
   }
 
-  public void setProtocol(String protocol) {
-    this.protocol = protocol;
+  public Request getRequest() {
+    return request;
   }
 
-  public void setResponseCode(String responseCode) {
-    this.responseCode = responseCode;
+  public void setStatusCode(HttpStatusCode statusCode) {
+    this.statusCode = statusCode;
   }
 
   public void setHeaders(Map<String, String> headers) {
@@ -87,9 +83,18 @@ public class Response {
     this.encoding = encoding;
   }
 
+  public void setRequest(Request request) {
+    this.request = request;
+  }
+
   @Override
   public String toString() {
+    try {
+      setHeader("Content-Length", "" + getContentLength());
+    } catch (UnsupportedEncodingException e) {
+      e.printStackTrace();
+    }
     String headersString = getHeaders().entrySet().stream().map((entry) -> entry.getKey() + ":" + entry.getValue()).collect(Collectors.joining("\r\n"));
-    return getProtocol() + " " + getResponseCode() + "\r\n" + headersString + "\r\n\r\n" + getBody();
+    return getRequest().getProtocol() + " " + getStatusCode().toString() + "\r\n" + headersString + "\r\n\r\n" + getBody();
   }
 }
