@@ -19,6 +19,16 @@
         <SOURCES />
       </library>
     </orderEntry>
+    <orderEntry type="library" name="mockito-all-1.9.5" level="project" />
+    <orderEntry type="module-library">
+      <library>
+        <CLASSES>
+          <root url="jar://$MODULE_DIR$/lib/commons-io-2.4.jar!/" />
+        </CLASSES>
+        <JAVADOC />
+        <SOURCES />
+      </library>
+    </orderEntry>
   </component>
 </module>
 
