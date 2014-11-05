@@ -6,11 +6,12 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 public class Response {
+  public static final String CRLF = "\r\n";
   private Request request;
   private HttpStatusCode statusCode;
   private Map<String, String> headers = new LinkedHashMap<>();
   private String body;
-  private String encoding = "UTF-8";
+  private String encoding = "ISO-8859-1";
 
   public Response(Request request) throws UnsupportedOperationException, UnsupportedEncodingException {
     this.request = request;
@@ -94,7 +95,7 @@ public class Response {
     } catch (UnsupportedEncodingException e) {
       e.printStackTrace();
     }
-    String headersString = getHeaders().entrySet().stream().map((entry) -> entry.getKey() + ":" + entry.getValue()).collect(Collectors.joining("\r\n"));
-    return getRequest().getProtocol() + " " + getStatusCode().toString() + "\r\n" + headersString + "\r\n\r\n" + getBody();
+    String headersString = getHeaders().entrySet().stream().map((entry) -> entry.getKey() + ":" + entry.getValue()).collect(Collectors.joining(CRLF));
+    return getRequest().getProtocol() + " " + getStatusCode().toString() + CRLF + headersString + CRLF + CRLF + getBody();
   }
 }

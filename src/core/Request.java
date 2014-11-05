@@ -7,10 +7,12 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import static core.HttpRequestRegEx.*;
 import static core.HttpStatusCode.BAD_REQUEST;
 import static core.HttpStatusCode.NOT_IMPLEMENTED;
 
 public class Request {
+  public static final String CRLF = "\r\n";
   private String method;
   private String path;
   private String protocol = "HTTP/1.1";
@@ -22,15 +24,19 @@ public class Request {
 
   public Request(InputStream in) throws IOException {
     try {
-      String[] requestLineAndHeaders = readRequestLineAndHeaders(in).split("\r\n");
+      String[] requestLineAndHeaders = readRequestLineAndHeaders(in).split(CRLF,2);
       setRequestLineMembers(requestLineAndHeaders[0]);
 
-      if (requestLineAndHeaders.length > 1)
-        for (int i = 1; i < requestLineAndHeaders.length; i++)
-          setHeader(requestLineAndHeaders[i]);
+      if (requestLineAndHeaders.length == 2) {
+        for (String header : replaceMultipleLWSWithSingle(requestLineAndHeaders[1]).split(CRLF))
+          setHeader(header);
+      }
 
       if (getHeader("TRANSFER-ENCODING") != null)
         throw new HttpError(NOT_IMPLEMENTED);
+
+      if (getHeader("HOST") == null && path.charAt(0) == '/')
+        throw new HttpError(BAD_REQUEST);
 
       setBody(readBody(in));
     } catch (HttpError e) {
@@ -43,8 +49,12 @@ public class Request {
 
     int byteRead;
     while ((byteRead = in.read()) != -1) {
+      if (stringBuilder.toString().equals(CRLF))
+        stringBuilder = new StringBuilder();
+
       stringBuilder.append((char) byteRead);
-      if ("\r\n\r\n".equals(stringBuilder.substring(Math.max(0,stringBuilder.length()-4))))
+
+      if ((CRLF+CRLF).equals(stringBuilder.substring(Math.max(0,stringBuilder.length()-4))))
         break;
     }
 
@@ -67,10 +77,10 @@ public class Request {
   }
 
   public void setRequestLineMembers(String requestLine) {
-    String[] splitRequestLine = requestLine.split(" ");
-
-    if (splitRequestLine.length != 3)
+    if (!validateRequestLineFormat(requestLine))
       throw new HttpError(BAD_REQUEST);
+
+    String[] splitRequestLine = requestLine.split(" ");
 
     setMethod(splitRequestLine[0]);
     setPath(splitRequestLine[1]);
@@ -82,13 +92,16 @@ public class Request {
   }
 
   public void setHeader(String header, String value) {
-    header = header.trim().toUpperCase();
+    header = header.toUpperCase();
     String headerValue = getHeader(header);
 
     getHeaders().put(header, (headerValue == null ? "" : headerValue + ", ") + value.trim());
   }
 
   public void setHeader(String headerValuePair) {
+    if (!validateHeader(headerValuePair))
+      throw new HttpError(BAD_REQUEST);
+
     String[] headerValuePairSplitByColon = headerValuePair.split(":", 2);
     if (headerValuePairSplitByColon.length != 2)
       throw new HttpError(BAD_REQUEST);
@@ -121,7 +134,7 @@ public class Request {
   }
 
   public void setMethod(String method) {
-    if (!Arrays.asList("OPTIONS", "GET", "HEAD", "POST", "PUT", "DELETE", "TRACE", "CONNECT").contains(method))
+    if (!validateMethod(method))
       throw new HttpError(BAD_REQUEST);
 
     if (!Arrays.asList("GET", "POST", "HEAD").contains(method))
@@ -138,7 +151,7 @@ public class Request {
   }
 
   public void setProtocol(String protocol) {
-    if (!protocol.matches("HTTP/\\d\\.\\d"))
+    if (!validateProtocol(protocol))
       throw new HttpError(BAD_REQUEST);
 
     if (!Arrays.asList("HTTP/1.0", "HTTP/1.1").contains(protocol))
@@ -161,10 +174,10 @@ public class Request {
 
   @Override
   public String toString() {
-    String headersString = getHeaders().entrySet().stream().map((entry) -> entry.getKey() + ": " + entry.getValue()).collect(Collectors.joining("\r\n"));
+    String headersString = getHeaders().entrySet().stream().map((entry) -> entry.getKey() + ": " + entry.getValue()).collect(Collectors.joining(CRLF));
     return getMethod() + " " + getPath() + " " + getProtocol() +
-      ("".equals(headersString) ? "" : "\r\n" + headersString) +
-      "\r\n\r\n" +
+      ("".equals(headersString) ? "" : CRLF + headersString) +
+      CRLF + CRLF +
       (getBody() == null ? "" : getBody());
   }
 }
