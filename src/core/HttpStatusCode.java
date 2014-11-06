@@ -3,7 +3,7 @@ package core;
 public enum HttpStatusCode {
 
     OK (200, "OK"),
-    BAD_REQUEST (400, "Bad core.Request"),
+    BAD_REQUEST (400, "Bad Request"),
     NOT_FOUND (404, "Not Found"),
     REQUEST_TIMEOUT (408, "Request Timeout"),
     INTERNAL_SERVER_ERROR (500, "Internal core.Server Error"),
