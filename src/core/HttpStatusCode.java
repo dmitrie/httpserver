@@ -11,24 +11,24 @@ public enum HttpStatusCode {
     HTTP_VERSION_NOT_SUPPORTED (505, "HTTP Version Not Supported");
 
     private final int code;
-    private final String name;
+    private final String reasonPhrase;
 
-    private HttpStatusCode(int code, String name) {
+    private HttpStatusCode(int code, String reasonPhrase) {
       this.code = code;
-      this.name = name;
+      this.reasonPhrase = reasonPhrase;
     }
 
     public int getCode() {
       return code;
     }
 
-    public String getName() {
-      return name;
+    public String getReasonPhrase() {
+      return reasonPhrase;
     }
 
     @Override
     public String toString() {
-      return code + " " + name;
+      return code + " " + reasonPhrase;
     }
 
 }
