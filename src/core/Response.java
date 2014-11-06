@@ -34,7 +34,6 @@ public class Response {
 
     setHeader("Content-Type", "text/html; charset=" + getEncoding());
     setHeader("Last-modified", Server.getServerTime());
-    setHeader("Content-Length", "" + getContentLength());
   }
 
   public int getContentLength() throws UnsupportedEncodingException {
@@ -46,6 +45,9 @@ public class Response {
   }
 
   public void setHeader(String header, String value) {
+    if ("Content-length".equalsIgnoreCase(header))
+      throw new IllegalArgumentException("Content-Length is added to the response automatically by toString()");
+
     getHeaders().put(header, value);
   }
 
@@ -91,12 +93,17 @@ public class Response {
 
   @Override
   public String toString() {
+    String headersString = getHeaders().entrySet().stream().map((entry) -> entry.getKey() + ": " + entry.getValue()).collect(Collectors.joining(CRLF));
+    String response = "";
     try {
-      setHeader("Content-Length", "" + getContentLength());
+      response = getRequest().getProtocol() + " " + getStatusCode().toString() +
+        ("".equals(headersString) ? "" : CRLF + headersString) +
+        (getBody() == null ? "" : CRLF + "Content-Length: " + getContentLength()) +
+        CRLF + CRLF +
+        (getBody() == null ? "" : getBody());
     } catch (UnsupportedEncodingException e) {
       e.printStackTrace();
     }
-    String headersString = getHeaders().entrySet().stream().map((entry) -> entry.getKey() + ":" + entry.getValue()).collect(Collectors.joining(CRLF));
-    return getRequest().getProtocol() + " " + getStatusCode().toString() + CRLF + headersString + CRLF + CRLF + getBody();
+    return response;
   }
 }
