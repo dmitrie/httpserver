@@ -290,7 +290,7 @@ public class RequestTest {
   }
 
   @Test
-  public void testHeaderNamesCaseInPreserved() throws Exception {
+  public void testHeaderNamesCaseIsPreserved() throws Exception {
     Request request = new Request();
     request.setHeader("Cache-Control", "no-cache");
     assertEquals("Cache-Control", request.getHeaders().keySet().iterator().next());
