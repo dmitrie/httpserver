@@ -5,8 +5,9 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import static core.HttpRequestRegEx.CRLF;
+
 public class Response {
-  public static final String CRLF = "\r\n";
   private Request request;
   private HttpStatusCode statusCode;
   private Map<String, String> headers = new LinkedHashMap<>();
@@ -45,7 +46,7 @@ public class Response {
   }
 
   public void setHeader(String header, String value) {
-    getHeaders().put(header.toUpperCase(), value);
+    getHeaders().put(header, value);
   }
 
   public HttpStatusCode getStatusCode() {

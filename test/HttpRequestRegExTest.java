@@ -87,8 +87,6 @@ public class HttpRequestRegExTest {
     assertFalse(validateHeader("abc: \u0001"));
     assertFalse(validateHeader("abc: \u001F"));
     assertFalse(validateHeader("abc: \u007F"));
-    assertFalse(validateHeader("Content-length: 20\r\nContent-length: 2\r\n0\r\nContent-length: 20"));
-    assertFalse(validateHeader("Content-length: 20\r\nContent\t-length: 2"));
   }
 
   @Test

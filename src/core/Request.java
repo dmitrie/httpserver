@@ -1,22 +1,21 @@
 package core;
 
+import org.springframework.util.LinkedCaseInsensitiveMap;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Arrays;
-import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.stream.Collectors;
 
 import static core.HttpRequestRegEx.*;
-import static core.HttpStatusCode.BAD_REQUEST;
-import static core.HttpStatusCode.NOT_IMPLEMENTED;
+import static core.HttpStatusCode.*;
 
 public class Request {
-  public static final String CRLF = "\r\n";
   private String method;
   private String path;
   private String protocol = "HTTP/1.1";
-  private Map<String, String> headers = new LinkedHashMap<>();
+  private Map<String, String> headers = new LinkedCaseInsensitiveMap();
   private HttpStatusCode errorCode;
   private String body;
 
@@ -28,7 +27,7 @@ public class Request {
       setRequestLineMembers(requestLineAndHeaders[0]);
 
       if (requestLineAndHeaders.length == 2) {
-        for (String header : replaceMultipleLWSWithSingle(requestLineAndHeaders[1]).split(CRLF))
+        for (String header : replaceMultipleLWSWithSingleSpace(requestLineAndHeaders[1]).split(CRLF))
           setHeader(header);
       }
 
@@ -92,7 +91,6 @@ public class Request {
   }
 
   public void setHeader(String header, String value) {
-    header = header.toUpperCase();
     String headerValue = getHeader(header);
 
     getHeaders().put(header, (headerValue == null ? "" : headerValue + ", ") + value.trim());
@@ -103,9 +101,6 @@ public class Request {
       throw new HttpError(BAD_REQUEST);
 
     String[] headerValuePairSplitByColon = headerValuePair.split(":", 2);
-    if (headerValuePairSplitByColon.length != 2)
-      throw new HttpError(BAD_REQUEST);
-
     setHeader(headerValuePairSplitByColon[0], headerValuePairSplitByColon[1]);
   }
 
@@ -144,9 +139,6 @@ public class Request {
   }
 
   public void setPath(String path) {
-    if ("".equals(path))
-      throw new HttpError(BAD_REQUEST);
-
     this.path = path;
   }
 
@@ -155,7 +147,7 @@ public class Request {
       throw new HttpError(BAD_REQUEST);
 
     if (!Arrays.asList("HTTP/1.0", "HTTP/1.1").contains(protocol))
-      throw new HttpError(NOT_IMPLEMENTED);
+      throw new HttpError(HTTP_VERSION_NOT_SUPPORTED);
 
     this.protocol = protocol;
   }

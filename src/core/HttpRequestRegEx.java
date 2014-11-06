@@ -5,6 +5,9 @@ import java.util.regex.Pattern;
 import static core.HttpRequestRegEx.BasicRules.*;
 
 public class HttpRequestRegEx {
+
+  public static final String CRLF = "\r\n";
+
   static enum BasicRules {
     CRLF("\\u000D\\u000A"),
     CHAR("[\\u0000-\\u007F]"),
@@ -64,7 +67,7 @@ public class HttpRequestRegEx {
     return VALID_REQUEST_LINE_FORMAT.matcher(requestLine).matches();
   }
 
-  public static String replaceMultipleLWSWithSingle(String headers) {
+  public static String replaceMultipleLWSWithSingleSpace(String headers) {
     return headers.replaceAll("(" + LWS + ")+", " ");
   }
 }
