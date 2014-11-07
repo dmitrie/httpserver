@@ -105,8 +105,9 @@ public class RequestTest {
 
     Request request = new Request(in);
     assertEquals("no-cache", request.getHeader("CACHE-CONTROL"));
+    assertEquals("5", request.getHeader("Content-Length"));
     assertEquals(null, request.getHeader("ACCEPT-ENCODING"));
-    assertEquals("Accep", request.getBody());
+
     assertEquals(null, request.getErrorCode());
   }
 
@@ -223,6 +224,18 @@ public class RequestTest {
       "Host: www.google.com\r\n" +
       "Content-length: 0\r\n\r\n", request.toString());
     assertEquals(null, request.getErrorCode());
+  }
+
+  @Test
+  public void testConstructorContentLengthIsLargerThanBodyLength_RFC2616_4_4() throws Exception {
+    String requestString = "POST /test HTTP/1.0\r\n" +
+      "Host: www.google.com\r\n" +
+      "Content-length: 1000\r\n\r\n" +
+      "\r\nSome  \r\n  body  here\r\n";
+    InputStream in = new ByteArrayInputStream(requestString.getBytes());
+
+    Request request = new Request(in);
+    assertEquals(BAD_REQUEST, request.getErrorCode());
   }
 
   @Test
