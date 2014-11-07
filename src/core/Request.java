@@ -4,6 +4,7 @@ import org.springframework.util.LinkedCaseInsensitiveMap;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.UnsupportedEncodingException;
 import java.util.Arrays;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -38,6 +39,9 @@ public class Request {
         throw new HttpError(BAD_REQUEST);
 
       setBody(readBody(in));
+
+      if (getBody() != null && !getHeader("Content-Length").equals("" + getContentLength()))
+         throw new HttpError(BAD_REQUEST);
     } catch (HttpError e) {
      setErrorCode(e.getErrorCode());
     }
@@ -66,7 +70,13 @@ public class Request {
     if (contentLength == null)
       return null;
 
-    int numericContentLength = Integer.parseInt(contentLength);
+    int numericContentLength;
+    try {
+      numericContentLength = Integer.parseInt(contentLength);
+    } catch (NumberFormatException e) {
+      throw new HttpError(BAD_REQUEST);
+    }
+
     if (numericContentLength == 0)
       return "";
 
@@ -84,6 +94,10 @@ public class Request {
     setMethod(splitRequestLine[0]);
     setPath(splitRequestLine[1]);
     setProtocol(splitRequestLine[2]);
+  }
+
+  public int getContentLength() throws UnsupportedEncodingException {
+    return getBody().getBytes().length;
   }
 
   public String getHeader(String header) {
