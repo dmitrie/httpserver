@@ -71,8 +71,8 @@ public class Request {
       return "";
 
     byte[] buffer = new byte[numericContentLength];
-    in.read(buffer, 0, numericContentLength);
-    return new String(buffer);
+    int bytesActuallyRead = in.read(buffer, 0, numericContentLength);
+    return new String(buffer, 0, bytesActuallyRead);
   }
 
   public void setRequestLineMembers(String requestLine) {
