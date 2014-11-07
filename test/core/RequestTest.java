@@ -1,4 +1,5 @@
-import core.Request;
+package core;
+
 import org.junit.Test;
 import org.springframework.util.LinkedCaseInsensitiveMap;
 
