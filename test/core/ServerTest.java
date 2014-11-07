@@ -16,15 +16,19 @@ import static org.junit.Assert.assertEquals;
 public class ServerTest {
   Thread serverThread;
   Server server;
-  String documentRootPath = "/home/kool/IdeaProjects/httpserver/test/web/";
+  ServerConfiguration serverConfiguration;
 
   @Before
   public void setUp() throws Exception {
     boolean exceptionCaught;
-    int maximumNumberOfAttempts = 5;
+    int numberOfAttempts = 5;
     do {
       try {
-        server = new Server(8361, documentRootPath);
+        serverConfiguration = new ServerConfiguration();
+        serverConfiguration.setPortNumber(8361);
+        serverConfiguration.setDocumentRootPath("/home/kool/IdeaProjects/httpserver/test/web/");
+        serverConfiguration.setRequestTimeOut(500);
+        server = new Server(serverConfiguration);
         serverThread = new Thread(() -> {
           server.start();
         });
@@ -34,7 +38,7 @@ public class ServerTest {
         exceptionCaught = true;
         Thread.sleep(500);
       }
-    } while (exceptionCaught && maximumNumberOfAttempts-- > 0);
+    } while (exceptionCaught && numberOfAttempts-- > 0);
   }
 
   @After
@@ -54,7 +58,7 @@ public class ServerTest {
       out.flush();
 
       IncomingHttpMessage serverResponse = readServerResponse(in);
-      String expectedBody = Server.readFile(Server.combinePaths(documentRootPath, "test.html"), new Response(new Request()).getBodyEncoding());
+      String expectedBody = Server.readFile(Server.combinePaths(serverConfiguration.getDocumentRootPath(), "test.html"), new Response(new Request(server.getServerConfiguration())).getBodyEncoding());
 
       assertEquals("HTTP/1.1 " + OK, serverResponse.getStartLine());
       assertEquals("" + expectedBody.getBytes(serverResponse.getBodyEncoding()).length, serverResponse.getHeader("Content-length"));

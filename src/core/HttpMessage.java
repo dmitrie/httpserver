@@ -17,6 +17,7 @@ public class HttpMessage {
   protected String body;
   protected Charset bodyEncoding = forName("ISO-8859-1");
   protected HttpStatusCode responseStatusCode;
+  protected ServerConfiguration serverConfiguration;
 
   public String getHeader(String header) {
     return getHeaders().get(header);
@@ -64,6 +65,10 @@ public class HttpMessage {
     return responseStatusCode;
   }
 
+  public ServerConfiguration getServerConfiguration() {
+    return serverConfiguration;
+  }
+
   public void setProtocol(String protocol) {
     this.protocol = protocol;
   }
@@ -86,5 +91,9 @@ public class HttpMessage {
 
   public void setResponseStatusCode(HttpStatusCode responseStatusCode) {
     this.responseStatusCode = responseStatusCode;
+  }
+
+  public void setServerConfiguration(ServerConfiguration serverConfiguration) {
+    this.serverConfiguration = serverConfiguration;
   }
 }

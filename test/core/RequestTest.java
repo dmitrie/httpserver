@@ -11,13 +11,15 @@ import static org.junit.Assert.assertEquals;
 
 public class RequestTest {
 
+  ServerConfiguration serverConfiguration = new ServerConfiguration();
+
   @Test
   public void testConstructorUseLFInsteadOfCRLF_RFC2616_2_2() throws Exception {
     String requestString = "GET http://google.com HTTP/1.1\n" +
                            "Cache-Control: no-cache\n\n";
     InputStream in = new ByteArrayInputStream(requestString.getBytes());
 
-    Request request = new Request(in);
+    Request request = new Request(in, serverConfiguration);
     assertEquals(BAD_REQUEST, request.getResponseStatusCode());
   }
 
@@ -26,7 +28,7 @@ public class RequestTest {
     String requestString = "GET / HTTP1.0\r\n\r\n";
     InputStream in = new ByteArrayInputStream(requestString.getBytes());
 
-    Request request = new Request(in);
+    Request request = new Request(in, serverConfiguration);
     assertEquals(BAD_REQUEST, request.getResponseStatusCode());
   }
 
@@ -35,7 +37,7 @@ public class RequestTest {
     String requestString = "GET http://google.com HTTP/1.1\r\n\r\n";
     InputStream in = new ByteArrayInputStream(requestString.getBytes());
 
-    Request request = new Request(in);
+    Request request = new Request(in, serverConfiguration);
     assertEquals("GET", request.getMethod());
     assertEquals("http://google.com", request.getPath());
     assertEquals("HTTP/1.1", request.getProtocol());
@@ -52,7 +54,7 @@ public class RequestTest {
                            "Cache-Control: no-store\r\n\r\n";
     InputStream in = new ByteArrayInputStream(requestString.getBytes());
 
-    Request request = new Request(in);
+    Request request = new Request(in, serverConfiguration);
     assertEquals("HEAD", request.getMethod());
     assertEquals("/test.html", request.getPath());
     assertEquals("HTTP/1.0", request.getProtocol());
@@ -72,7 +74,7 @@ public class RequestTest {
                            "\r\nSome  \r\n  body  here\r\n";
     InputStream in = new ByteArrayInputStream(requestString.getBytes());
 
-    Request request = new Request(in);
+    Request request = new Request(in, serverConfiguration);
     assertEquals("POST", request.getMethod());
     assertEquals("/test", request.getPath());
     assertEquals("HTTP/1.0", request.getProtocol());
@@ -88,7 +90,7 @@ public class RequestTest {
     String requestString = "\r\n\r\nGET http://www.google.com HTTP/1.1\r\n\r\n";
     InputStream in = new ByteArrayInputStream(requestString.getBytes());
 
-    Request request = new Request(in);
+    Request request = new Request(in, serverConfiguration);
     assertEquals("GET", request.getMethod());
     assertEquals(null, request.getResponseStatusCode());
   }
@@ -103,7 +105,7 @@ public class RequestTest {
                            "abcde";
     InputStream in = new ByteArrayInputStream(requestString.getBytes());
 
-    Request request = new Request(in);
+    Request request = new Request(in, serverConfiguration);
     assertEquals("no-cache", request.getHeader("CACHE-CONTROL"));
     assertEquals("5", request.getHeader("Content-Length"));
     assertEquals(null, request.getHeader("ACCEPT-ENCODING"));
@@ -117,7 +119,7 @@ public class RequestTest {
                            "Cache-Control: \r\n\t   \r\n\t n o \r\n -cac\t\the\r\n\r\n";
     InputStream in = new ByteArrayInputStream(requestString.getBytes());
 
-    Request request = new Request(in);
+    Request request = new Request(in, serverConfiguration);
     assertEquals("n o -cac he", request.getHeader("CACHE-CONTROL"));
     assertEquals(null, request.getResponseStatusCode());
   }
@@ -128,7 +130,7 @@ public class RequestTest {
                            "Cache- Control: test";
     InputStream in = new ByteArrayInputStream(requestString.getBytes());
 
-    Request request = new Request(in);
+    Request request = new Request(in, serverConfiguration);
     assertEquals(BAD_REQUEST, request.getResponseStatusCode());
   }
 
@@ -138,7 +140,7 @@ public class RequestTest {
                            "Cache-Control no-cache\r\n\r\n";
     InputStream in = new ByteArrayInputStream(requestString.getBytes());
 
-    Request request = new Request(in);
+    Request request = new Request(in, serverConfiguration);
     assertEquals(BAD_REQUEST, request.getResponseStatusCode());
   }
 
@@ -148,14 +150,14 @@ public class RequestTest {
                            "Host: \r\n\t   www.google.com \r\n \r\n\t  \t\r\n\r\n";
     InputStream in = new ByteArrayInputStream(requestString.getBytes());
 
-    Request request = new Request(in);
+    Request request = new Request(in, serverConfiguration);
     assertEquals("www.google.com", request.getHeader("HOST"));
     assertEquals(null, request.getResponseStatusCode());
   }
 
   @Test
   public void testHeaderNamesAreCaseInsensitive_RFC2616_4_2() throws Exception {
-    Request request = new Request();
+    Request request = new Request(serverConfiguration);
     request.setHeaders(new LinkedCaseInsensitiveMap<String>(){{
       put("Cache-Control", "no-cache");
     }});
@@ -172,7 +174,7 @@ public class RequestTest {
                            "Cache-Control: no-store\r\n\r\n";
     InputStream in = new ByteArrayInputStream(requestString.getBytes());
 
-    Request request = new Request(in);
+    Request request = new Request(in, serverConfiguration);
     assertEquals("HEAD", request.getMethod());
     assertEquals("http://google.com/test.html", request.getPath());
     assertEquals("HTTP/1.0", request.getProtocol());
@@ -191,7 +193,7 @@ public class RequestTest {
                            "\r\nSome  \r\n  body  here\r\n";
     InputStream in = new ByteArrayInputStream(requestString.getBytes());
 
-    Request request = new Request(in);
+    Request request = new Request(in, serverConfiguration);
     assertEquals("POST", request.getMethod());
     assertEquals("/test", request.getPath());
     assertEquals("HTTP/1.0", request.getProtocol());
@@ -213,7 +215,7 @@ public class RequestTest {
                            "\r\nSome  \r\n  body  here\r\n";
     InputStream in = new ByteArrayInputStream(requestString.getBytes());
 
-    Request request = new Request(in);
+    Request request = new Request(in, serverConfiguration);
     assertEquals("POST", request.getMethod());
     assertEquals("/test", request.getPath());
     assertEquals("HTTP/1.0", request.getProtocol());
@@ -234,7 +236,7 @@ public class RequestTest {
       "\r\nSome  \r\n  body  here\r\n";
     InputStream in = new ByteArrayInputStream(requestString.getBytes());
 
-    Request request = new Request(in);
+    Request request = new Request(in, serverConfiguration);
     assertEquals(BAD_REQUEST, request.getResponseStatusCode());
   }
 
@@ -243,7 +245,7 @@ public class RequestTest {
     String requestString = "GET /some file name with spaces.html HTTP/1.1\r\n\r\n";
     InputStream in = new ByteArrayInputStream(requestString.getBytes());
 
-    Request request = new Request(in);
+    Request request = new Request(in, serverConfiguration);
     assertEquals(BAD_REQUEST, request.getResponseStatusCode());
   }
 
@@ -252,7 +254,7 @@ public class RequestTest {
     String requestString = "GE/T /test HTTP/1.0\r\n\r\n";
     InputStream in = new ByteArrayInputStream(requestString.getBytes());
 
-    Request request = new Request(in);
+    Request request = new Request(in, serverConfiguration);
     assertEquals(BAD_REQUEST, request.getResponseStatusCode());
   }
 
@@ -261,7 +263,7 @@ public class RequestTest {
     String requestString = "DELETE /test HTTP/1.0\r\n\r\n";
     InputStream in = new ByteArrayInputStream(requestString.getBytes());
 
-    Request request = new Request(in);
+    Request request = new Request(in, serverConfiguration);
     assertEquals(NOT_IMPLEMENTED, request.getResponseStatusCode());
   }
 
@@ -270,7 +272,7 @@ public class RequestTest {
     String requestString = "OTHER_METHOD /test HTTP/1.0\r\n\r\n";
     InputStream in = new ByteArrayInputStream(requestString.getBytes());
 
-    Request request = new Request(in);
+    Request request = new Request(in, serverConfiguration);
     assertEquals(NOT_IMPLEMENTED, request.getResponseStatusCode());
   }
 
@@ -279,7 +281,7 @@ public class RequestTest {
     String requestString = "GET / HTTP/1.1\r\n\r\n";
     InputStream in = new ByteArrayInputStream(requestString.getBytes());
 
-    Request request = new Request(in);
+    Request request = new Request(in, serverConfiguration);
 
     assertEquals(BAD_REQUEST, request.getResponseStatusCode());
   }
@@ -289,7 +291,7 @@ public class RequestTest {
     String requestString = "GET / HTTP/0.9\r\n\r\n";
     InputStream in = new ByteArrayInputStream(requestString.getBytes());
 
-    Request request = new Request(in);
+    Request request = new Request(in, serverConfiguration);
     assertEquals(HTTP_VERSION_NOT_SUPPORTED, request.getResponseStatusCode());
   }
 
@@ -299,13 +301,13 @@ public class RequestTest {
                            "Transfer-Encoding: foo\r\n\r\n";
     InputStream in = new ByteArrayInputStream(requestString.getBytes());
 
-    Request request = new Request(in);
+    Request request = new Request(in, serverConfiguration);
     assertEquals(NOT_IMPLEMENTED, request.getResponseStatusCode());
   }
 
   @Test
   public void testHeaderNamesCaseIsPreserved() throws Exception {
-    Request request = new Request();
+    Request request = new Request(serverConfiguration);
     request.setHeader("Cache-Control", "no-cache");
     assertEquals("Cache-Control", request.getHeaders().keySet().iterator().next());
   }

@@ -14,30 +14,23 @@ import java.util.Calendar;
 import static core.HttpStatusCode.*;
 
 public class Server {
-  private int portNumber;
-  private String documentRootPath;
+  private ServerConfiguration serverConfiguration;
   private ServerSocket serverSocket;
   private boolean serverIsRunning = false;
-  private int requestTimeOut = 2000;
-  private int maximumURILength = 8190;
 
   public static void main(String[] args) throws IOException {
-    if (args.length != 2) {
-      System.err.println("Usage: java Server <port number> <documentRootPath>");
-      System.exit(1);
-    }
-
-    int portNumber = Integer.parseInt(args[0]);
-    String path = args[1].trim();
-
-    Server server = new Server(portNumber, path);
+    Server server = new Server();
     server.start();
   }
 
-  public Server(int portNumber, String documentRootPath) throws IOException {
-    this.portNumber = portNumber;
-    this.documentRootPath = documentRootPath;
-    this.serverSocket = new ServerSocket(portNumber);
+  public Server(ServerConfiguration serverConfiguration) throws IOException {
+    this.serverConfiguration = serverConfiguration;
+    this.serverSocket = new ServerSocket(serverConfiguration.getPortNumber());
+  }
+
+  public Server() throws IOException {
+    this.serverConfiguration = new ServerConfiguration();
+    this.serverSocket = new ServerSocket(serverConfiguration.getPortNumber());
   }
 
   public void start() {
@@ -53,11 +46,11 @@ public class Server {
       PrintWriter out = new PrintWriter(clientSocket.getOutputStream(), true);
       InputStream in = clientSocket.getInputStream();
     ) {
-      clientSocket.setSoTimeout(requestTimeOut);
+      clientSocket.setSoTimeout(serverConfiguration.getRequestTimeOut());
 
-      Request request = new Request();
+      Request request = new Request(serverConfiguration);
       try {
-        request = new Request(in);
+        request = new Request(in, serverConfiguration);
       } catch (SocketTimeoutException e) {
         respondWithError(out, request, REQUEST_TIMEOUT);
       } catch (Exception e) {
@@ -92,7 +85,7 @@ public class Server {
       return response;
 
     try {
-      response.setBody(readFile(combinePaths(documentRootPath, request.getPath()), StandardCharsets.UTF_8));
+      response.setBody(readFile(combinePaths(serverConfiguration.getDocumentRootPath(), request.getPath()), StandardCharsets.UTF_8));
       response.setResponseStatusCode(OK);
     } catch (IOException e) {
       response.setErrorBodyAndHeaders(NOT_FOUND);
@@ -121,32 +114,12 @@ public class Server {
     return file2.getPath();
   }
 
-  public int getPortNumber() {
-    return portNumber;
-  }
-
-  public String getDocumentRootPath() {
-    return documentRootPath;
-  }
-
   public boolean isServerIsRunning() {
     return serverIsRunning;
   }
 
-  public int getRequestTimeOut() {
-    return requestTimeOut;
-  }
-
-  public int getMaximumURILength() {
-    return maximumURILength;
-  }
-
-  public void setRequestTimeOut(int requestTimeOut) {
-    this.requestTimeOut = requestTimeOut;
-  }
-
-  public void setMaximumURILength(int maximumURILength) {
-    this.maximumURILength = maximumURILength;
+  public ServerConfiguration getServerConfiguration() {
+    return serverConfiguration;
   }
 
   public void stop() throws IOException {

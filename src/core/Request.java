@@ -5,16 +5,18 @@ import java.io.InputStream;
 import java.util.Arrays;
 
 import static core.HttpRequestRegEx.*;
-import static core.HttpStatusCode.BAD_REQUEST;
-import static core.HttpStatusCode.NOT_IMPLEMENTED;
+import static core.HttpStatusCode.*;
 
 public class Request extends IncomingHttpMessage {
   private String method;
   private String path;
 
-  public Request() {}
+  public Request(ServerConfiguration serverConfiguration) {
+    this.serverConfiguration = serverConfiguration;
+  }
 
-  public Request(InputStream in) throws IOException {
+  public Request(InputStream in, ServerConfiguration serverConfiguration) throws IOException {
+    this.serverConfiguration = serverConfiguration;
     try {
       String[] requestLineAndHeaders = readStartLineAndHeaders(in).split(CRLF,2);
       setRequestLineMembers(requestLineAndHeaders[0]);
@@ -60,6 +62,13 @@ public class Request extends IncomingHttpMessage {
     this.method = method;
   }
 
+  public void setPath(String path) {
+    if (path.length() > serverConfiguration.getMaximumURILength())
+      throw new HttpError(REQUEST_URI_TOO_LONG);
+
+    this.path = path;
+  }
+
   public String getMethod() {
     return method;
   }
@@ -68,7 +77,4 @@ public class Request extends IncomingHttpMessage {
     return path;
   }
 
-  public void setPath(String path) {
-    this.path = path;
-  }
 }
