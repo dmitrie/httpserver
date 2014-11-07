@@ -51,7 +51,7 @@ public class Server {
       PrintWriter out = new PrintWriter(clientSocket.getOutputStream(), true);
       InputStream in = clientSocket.getInputStream();
     ) {
-      clientSocket.setSoTimeout(100);
+      clientSocket.setSoTimeout(2000);
 
       Request request = new Request();
       try {
