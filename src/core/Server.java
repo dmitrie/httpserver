@@ -18,6 +18,8 @@ public class Server {
   private String documentRootPath;
   private ServerSocket serverSocket;
   private boolean serverIsRunning = false;
+  private int requestTimeOut = 2000;
+  private int maximumURILength = 8190;
 
   public static void main(String[] args) throws IOException {
     if (args.length != 2) {
@@ -51,7 +53,7 @@ public class Server {
       PrintWriter out = new PrintWriter(clientSocket.getOutputStream(), true);
       InputStream in = clientSocket.getInputStream();
     ) {
-      clientSocket.setSoTimeout(2000);
+      clientSocket.setSoTimeout(requestTimeOut);
 
       Request request = new Request();
       try {
@@ -119,12 +121,32 @@ public class Server {
     return file2.getPath();
   }
 
-  public ServerSocket getServerSocket() {
-    return serverSocket;
+  public int getPortNumber() {
+    return portNumber;
   }
 
-  public void setServerSocket(ServerSocket serverSocket) {
-    this.serverSocket = serverSocket;
+  public String getDocumentRootPath() {
+    return documentRootPath;
+  }
+
+  public boolean isServerIsRunning() {
+    return serverIsRunning;
+  }
+
+  public int getRequestTimeOut() {
+    return requestTimeOut;
+  }
+
+  public int getMaximumURILength() {
+    return maximumURILength;
+  }
+
+  public void setRequestTimeOut(int requestTimeOut) {
+    this.requestTimeOut = requestTimeOut;
+  }
+
+  public void setMaximumURILength(int maximumURILength) {
+    this.maximumURILength = maximumURILength;
   }
 
   public void stop() throws IOException {
