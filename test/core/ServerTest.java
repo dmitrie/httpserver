@@ -3,27 +3,20 @@ package core;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-import org.springframework.util.LinkedCaseInsensitiveMap;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintWriter;
 import java.net.Socket;
-import java.util.Map;
 
 import static core.HttpRequestRegEx.CRLF;
 import static core.HttpStatusCode.*;
-import static java.nio.charset.Charset.forName;
 import static org.junit.Assert.assertEquals;
 
 public class ServerTest {
   Thread serverThread;
   Server server;
-
   String documentRootPath = "/home/kool/IdeaProjects/httpserver/test/web/";
-  Map<String, String> headers = new LinkedCaseInsensitiveMap();
-  String statusLine;
-  String body;
 
   @Before
   public void setUp() throws Exception {
@@ -60,13 +53,12 @@ public class ServerTest {
       out.write("GET /test.html HTTP/1.1\r\nHost: localhost\r\n\r\n");
       out.flush();
 
-      readServerResponse(in);
+      IncomingHttpMessage serverResponse = readServerResponse(in);
+      String expectedBody = Server.readFile(Server.combinePaths(documentRootPath, "test.html"), new Response(new Request()).getBodyEncoding());
 
-      String expectedBody = Server.readFile(Server.combinePaths(documentRootPath, "test.html"), forName(new Response(new Request()).getEncoding()));
-
-      assertEquals("HTTP/1.1 " + OK, statusLine);
-      assertEquals("" + expectedBody.getBytes().length, headers.get("Content-length"));
-      assertEquals(expectedBody, body);
+      assertEquals("HTTP/1.1 " + OK, serverResponse.getStartLine());
+      assertEquals("" + expectedBody.getBytes(serverResponse.getBodyEncoding()).length, serverResponse.getHeader("Content-length"));
+      assertEquals(expectedBody, serverResponse.getBody());
     }
   }
 
@@ -80,11 +72,7 @@ public class ServerTest {
       out.write("GET /foo/bar/test.html HTTP/1.1\r\nHost: localhost\r\n\r\n");
       out.flush();
 
-      readServerResponse(in);
-
-      String expectedBody = Server.readFile(Server.combinePaths(documentRootPath, "test.html"), forName(new Response(new Request()).getEncoding()));
-
-      assertEquals("HTTP/1.1 " + NOT_FOUND, statusLine);
+      assertEquals("HTTP/1.1 " + NOT_FOUND, readServerResponse(in).getStartLine());
     }
   }
 
@@ -98,11 +86,7 @@ public class ServerTest {
       out.write("foo bar\r\n\r\n");
       out.flush();
 
-      readServerResponse(in);
-
-      String expectedBody = Server.readFile(Server.combinePaths(documentRootPath, "test.html"), forName(new Response(new Request()).getEncoding()));
-
-      assertEquals("HTTP/1.1 " + BAD_REQUEST, statusLine);
+      assertEquals("HTTP/1.1 " + BAD_REQUEST, readServerResponse(in).getStartLine());
     }
   }
 
@@ -113,22 +97,19 @@ public class ServerTest {
       PrintWriter out = new PrintWriter(clientSocket.getOutputStream(), true);
       InputStream in = clientSocket.getInputStream();
     ) {
-      readServerResponse(in);
-
-      assertEquals(REQUEST_TIMEOUT.toString(), statusLine.split(" ", 2)[1]);
+      assertEquals(REQUEST_TIMEOUT.toString(), readServerResponse(in).getStartLine().split(" ", 2)[1]);
     }
   }
 
-  public void readServerResponse(InputStream in) throws IOException {
-    Request serverResponse = new Request();
-    String[] statusLineAndHeaders = serverResponse.readRequestLineAndHeaders(in).split(CRLF, 2);
-    statusLine = statusLineAndHeaders[0];
+  public IncomingHttpMessage readServerResponse(InputStream in) throws IOException {
+    IncomingHttpMessage serverResponse = new IncomingHttpMessage();
+    String[] statusLineAndHeaders = serverResponse.readStartLineAndHeaders(in).split(CRLF, 2);
 
-    if (statusLineAndHeaders.length == 2)
-      for (String header : statusLineAndHeaders[1].split(CRLF))
-        serverResponse.setHeader(header);
+    serverResponse.setStartLine(statusLineAndHeaders[0]);
+    serverResponse.parseAndSetHeaders(statusLineAndHeaders[1]);
 
-    headers = serverResponse.getHeaders();
-    body = serverResponse.readBody(in);
+    serverResponse.setBody(serverResponse.readBody(in));
+
+    return serverResponse;
   }
 }

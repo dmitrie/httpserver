@@ -18,7 +18,7 @@ public class RequestTest {
     InputStream in = new ByteArrayInputStream(requestString.getBytes());
 
     Request request = new Request(in);
-    assertEquals(BAD_REQUEST, request.getErrorCode());
+    assertEquals(BAD_REQUEST, request.getResponseStatusCode());
   }
 
   @Test
@@ -27,7 +27,7 @@ public class RequestTest {
     InputStream in = new ByteArrayInputStream(requestString.getBytes());
 
     Request request = new Request(in);
-    assertEquals(BAD_REQUEST, request.getErrorCode());
+    assertEquals(BAD_REQUEST, request.getResponseStatusCode());
   }
 
   @Test
@@ -40,8 +40,8 @@ public class RequestTest {
     assertEquals("http://google.com", request.getPath());
     assertEquals("HTTP/1.1", request.getProtocol());
 
-    assertEquals(requestString, request.toString());
-    assertEquals(null, request.getErrorCode());
+    assertEquals(requestString, request.generateMessage());
+    assertEquals(null, request.getResponseStatusCode());
   }
 
   @Test
@@ -60,8 +60,8 @@ public class RequestTest {
     assertEquals("text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8", request.getHeader("ACCEPT"));
     assertEquals("no-store", request.getHeader("CACHE-CONTROL"));
 
-    assertEquals(requestString, request.toString());
-    assertEquals(null, request.getErrorCode());
+    assertEquals(requestString, request.generateMessage());
+    assertEquals(null, request.getResponseStatusCode());
   }
 
   @Test
@@ -79,8 +79,8 @@ public class RequestTest {
     assertEquals("24", request.getHeader("CONTENT-LENGTH"));
     assertEquals("\r\nSome  \r\n  body  here\r\n", request.getBody());
 
-    assertEquals(requestString, request.toString());
-    assertEquals(null, request.getErrorCode());
+    assertEquals(requestString, request.generateMessage());
+    assertEquals(null, request.getResponseStatusCode());
   }
 
   @Test
@@ -90,7 +90,7 @@ public class RequestTest {
 
     Request request = new Request(in);
     assertEquals("GET", request.getMethod());
-    assertEquals(null, request.getErrorCode());
+    assertEquals(null, request.getResponseStatusCode());
   }
 
   @Test
@@ -108,7 +108,7 @@ public class RequestTest {
     assertEquals("5", request.getHeader("Content-Length"));
     assertEquals(null, request.getHeader("ACCEPT-ENCODING"));
 
-    assertEquals(null, request.getErrorCode());
+    assertEquals(null, request.getResponseStatusCode());
   }
 
   @Test
@@ -119,7 +119,7 @@ public class RequestTest {
 
     Request request = new Request(in);
     assertEquals("n o -cac he", request.getHeader("CACHE-CONTROL"));
-    assertEquals(null, request.getErrorCode());
+    assertEquals(null, request.getResponseStatusCode());
   }
 
   @Test
@@ -129,7 +129,7 @@ public class RequestTest {
     InputStream in = new ByteArrayInputStream(requestString.getBytes());
 
     Request request = new Request(in);
-    assertEquals(BAD_REQUEST, request.getErrorCode());
+    assertEquals(BAD_REQUEST, request.getResponseStatusCode());
   }
 
   @Test
@@ -139,7 +139,7 @@ public class RequestTest {
     InputStream in = new ByteArrayInputStream(requestString.getBytes());
 
     Request request = new Request(in);
-    assertEquals(BAD_REQUEST, request.getErrorCode());
+    assertEquals(BAD_REQUEST, request.getResponseStatusCode());
   }
 
   @Test
@@ -150,7 +150,7 @@ public class RequestTest {
 
     Request request = new Request(in);
     assertEquals("www.google.com", request.getHeader("HOST"));
-    assertEquals(null, request.getErrorCode());
+    assertEquals(null, request.getResponseStatusCode());
   }
 
   @Test
@@ -179,8 +179,8 @@ public class RequestTest {
     assertEquals("no-cache, no-store", request.getHeader("CACHE-CONTROL"));
 
     assertEquals("HEAD http://google.com/test.html HTTP/1.0\r\n" +
-                 "Cache-Control: no-cache, no-store\r\n\r\n", request.toString());
-    assertEquals(null, request.getErrorCode());
+                 "Cache-Control: no-cache, no-store\r\n\r\n", request.generateMessage());
+    assertEquals(null, request.getResponseStatusCode());
   }
 
   @Test
@@ -201,8 +201,8 @@ public class RequestTest {
     assertEquals("POST /test HTTP/1.0\r\n" +
       "Host: www.google.com\r\n" +
       "Content-length: 10\r\n\r\n" +
-      "\r\nSome  \r\n", request.toString());
-    assertEquals(null, request.getErrorCode());
+      "\r\nSome  \r\n", request.generateMessage());
+    assertEquals(null, request.getResponseStatusCode());
   }
 
   @Test
@@ -222,8 +222,8 @@ public class RequestTest {
 
     assertEquals("POST /test HTTP/1.0\r\n" +
       "Host: www.google.com\r\n" +
-      "Content-length: 0\r\n\r\n", request.toString());
-    assertEquals(null, request.getErrorCode());
+      "Content-length: 0\r\n\r\n", request.generateMessage());
+    assertEquals(null, request.getResponseStatusCode());
   }
 
   @Test
@@ -235,7 +235,7 @@ public class RequestTest {
     InputStream in = new ByteArrayInputStream(requestString.getBytes());
 
     Request request = new Request(in);
-    assertEquals(BAD_REQUEST, request.getErrorCode());
+    assertEquals(BAD_REQUEST, request.getResponseStatusCode());
   }
 
   @Test
@@ -244,7 +244,7 @@ public class RequestTest {
     InputStream in = new ByteArrayInputStream(requestString.getBytes());
 
     Request request = new Request(in);
-    assertEquals(BAD_REQUEST, request.getErrorCode());
+    assertEquals(BAD_REQUEST, request.getResponseStatusCode());
   }
 
   @Test
@@ -253,7 +253,7 @@ public class RequestTest {
     InputStream in = new ByteArrayInputStream(requestString.getBytes());
 
     Request request = new Request(in);
-    assertEquals(BAD_REQUEST, request.getErrorCode());
+    assertEquals(BAD_REQUEST, request.getResponseStatusCode());
   }
 
   @Test
@@ -262,7 +262,7 @@ public class RequestTest {
     InputStream in = new ByteArrayInputStream(requestString.getBytes());
 
     Request request = new Request(in);
-    assertEquals(NOT_IMPLEMENTED, request.getErrorCode());
+    assertEquals(NOT_IMPLEMENTED, request.getResponseStatusCode());
   }
 
   @Test
@@ -271,7 +271,7 @@ public class RequestTest {
     InputStream in = new ByteArrayInputStream(requestString.getBytes());
 
     Request request = new Request(in);
-    assertEquals(NOT_IMPLEMENTED, request.getErrorCode());
+    assertEquals(NOT_IMPLEMENTED, request.getResponseStatusCode());
   }
 
   @Test
@@ -281,7 +281,7 @@ public class RequestTest {
 
     Request request = new Request(in);
 
-    assertEquals(BAD_REQUEST, request.getErrorCode());
+    assertEquals(BAD_REQUEST, request.getResponseStatusCode());
   }
 
   @Test
@@ -290,7 +290,7 @@ public class RequestTest {
     InputStream in = new ByteArrayInputStream(requestString.getBytes());
 
     Request request = new Request(in);
-    assertEquals(HTTP_VERSION_NOT_SUPPORTED, request.getErrorCode());
+    assertEquals(HTTP_VERSION_NOT_SUPPORTED, request.getResponseStatusCode());
   }
 
   @Test
@@ -300,7 +300,7 @@ public class RequestTest {
     InputStream in = new ByteArrayInputStream(requestString.getBytes());
 
     Request request = new Request(in);
-    assertEquals(NOT_IMPLEMENTED, request.getErrorCode());
+    assertEquals(NOT_IMPLEMENTED, request.getResponseStatusCode());
   }
 
   @Test

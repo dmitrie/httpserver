@@ -65,7 +65,7 @@ public class Server {
       try {
         Response response = htmlFileHandler(request);
 
-        out.write(response.toString());
+        out.write(response.generateMessage());
         out.flush();
       } catch (Exception e) {
         respondWithError(out, request, INTERNAL_SERVER_ERROR);
@@ -80,24 +80,24 @@ public class Server {
   public void respondWithError(PrintWriter out, Request request, HttpStatusCode code) throws UnsupportedEncodingException {
     Response response = new Response(request);
     response.setErrorBodyAndHeaders(code);
-    out.write(response.toString());
+    out.write(response.generateMessage());
     out.flush();
   }
 
   public Response htmlFileHandler(Request request) throws UnsupportedEncodingException {
     Response response = new Response(request);
-    if (response.getStatusCode() != null)
+    if (response.getResponseStatusCode() != null)
       return response;
 
     try {
       response.setBody(readFile(combinePaths(documentRootPath, request.getPath()), StandardCharsets.UTF_8));
-      response.setStatusCode(OK);
+      response.setResponseStatusCode(OK);
     } catch (IOException e) {
       response.setErrorBodyAndHeaders(NOT_FOUND);
       return response;
     }
 
-    response.setHeader("Content-Type", "text/html; charset=" + response.getEncoding());
+    response.setHeader("Content-Type", "text/html; charset=" + response.getBodyEncoding());
     response.setHeader("Last-modified", getServerTime());
     return response;
   }
