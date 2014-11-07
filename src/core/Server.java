@@ -63,7 +63,7 @@ public class Server {
       }
 
       try {
-        Response response = simpleHTMLHandler(request);
+        Response response = htmlFileHandler(request);
 
         out.write(response.toString());
         out.flush();
@@ -84,7 +84,7 @@ public class Server {
     out.flush();
   }
 
-  public Response simpleHTMLHandler(Request request) throws UnsupportedEncodingException {
+  public Response htmlFileHandler(Request request) throws UnsupportedEncodingException {
     Response response = new Response(request);
     if (response.getStatusCode() != null)
       return response;
