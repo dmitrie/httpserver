@@ -15,17 +15,32 @@ import static core.HttpStatusCode.*;
 
 public class Server {
   private int portNumber;
-  private String path;
+  private String documentRootPath;
   private ServerSocket serverSocket;
+  private boolean serverIsRunning = false;
 
-  public Server(int portNumber, String path) throws IOException {
+  public static void main(String[] args) throws IOException {
+    if (args.length != 2) {
+      System.err.println("Usage: java Server <port number> <documentRootPath>");
+      System.exit(1);
+    }
+
+    int portNumber = Integer.parseInt(args[0]);
+    String path = args[1].trim();
+
+    Server server = new Server(portNumber, path);
+    server.start();
+  }
+
+  public Server(int portNumber, String documentRootPath) throws IOException {
     this.portNumber = portNumber;
-    this.path = path;
+    this.documentRootPath = documentRootPath;
     this.serverSocket = new ServerSocket(portNumber);
   }
 
   public void start() {
-    while(true) {
+    serverIsRunning = true;
+    while(serverIsRunning) {
       handleRequest();
     }
   }
@@ -75,7 +90,7 @@ public class Server {
       return response;
 
     try {
-      response.setBody(readFile(combinePaths(path, request.getPath()), StandardCharsets.UTF_8));
+      response.setBody(readFile(combinePaths(documentRootPath, request.getPath()), StandardCharsets.UTF_8));
       response.setStatusCode(OK);
     } catch (IOException e) {
       response.setErrorBodyAndHeaders(NOT_FOUND);
@@ -110,5 +125,10 @@ public class Server {
 
   public void setServerSocket(ServerSocket serverSocket) {
     this.serverSocket = serverSocket;
+  }
+
+  public void stop() throws IOException {
+    serverSocket.close();
+    serverIsRunning = false;
   }
 }
