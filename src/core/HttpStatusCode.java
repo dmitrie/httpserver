@@ -6,7 +6,7 @@ public enum HttpStatusCode {
     BAD_REQUEST (400, "Bad Request"),
     NOT_FOUND (404, "Not Found"),
     REQUEST_TIMEOUT (408, "Request Timeout"),
-    INTERNAL_SERVER_ERROR (500, "Internal core.Server Error"),
+    INTERNAL_SERVER_ERROR (500, "Internal Server Error"),
     NOT_IMPLEMENTED (501, "Not Implemented"),
     HTTP_VERSION_NOT_SUPPORTED (505, "HTTP Version Not Supported");
 
