@@ -85,7 +85,7 @@ public class Server {
       return response;
 
     try {
-      response.setBody(readFile(combinePaths(serverConfiguration.getDocumentRootPath(), request.getPath()), StandardCharsets.UTF_8));
+      response.setBody(readFile(combinePaths(serverConfiguration.getDocumentRootPath(), request.getRequestURI()), StandardCharsets.UTF_8));
       response.setResponseStatusCode(OK);
     } catch (IOException e) {
       response.setErrorBodyAndHeaders(NOT_FOUND);

@@ -39,7 +39,7 @@ public class RequestTest {
 
     Request request = new Request(in, serverConfiguration);
     assertEquals("GET", request.getMethod());
-    assertEquals("http://google.com", request.getPath());
+    assertEquals("http://google.com", request.getRequestURI());
     assertEquals("HTTP/1.1", request.getProtocol());
 
     assertEquals(requestString, request.generateMessage());
@@ -56,7 +56,7 @@ public class RequestTest {
 
     Request request = new Request(in, serverConfiguration);
     assertEquals("HEAD", request.getMethod());
-    assertEquals("/test.html", request.getPath());
+    assertEquals("/test.html", request.getRequestURI());
     assertEquals("HTTP/1.0", request.getProtocol());
     assertEquals("www.google.com", request.getHeader("HOST"));
     assertEquals("text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8", request.getHeader("ACCEPT"));
@@ -76,7 +76,7 @@ public class RequestTest {
 
     Request request = new Request(in, serverConfiguration);
     assertEquals("POST", request.getMethod());
-    assertEquals("/test", request.getPath());
+    assertEquals("/test", request.getRequestURI());
     assertEquals("HTTP/1.0", request.getProtocol());
     assertEquals("24", request.getHeader("CONTENT-LENGTH"));
     assertEquals("\r\nSome  \r\n  body  here\r\n", request.getBody());
@@ -176,7 +176,7 @@ public class RequestTest {
 
     Request request = new Request(in, serverConfiguration);
     assertEquals("HEAD", request.getMethod());
-    assertEquals("http://google.com/test.html", request.getPath());
+    assertEquals("http://google.com/test.html", request.getRequestURI());
     assertEquals("HTTP/1.0", request.getProtocol());
     assertEquals("no-cache, no-store", request.getHeader("CACHE-CONTROL"));
 
@@ -195,7 +195,7 @@ public class RequestTest {
 
     Request request = new Request(in, serverConfiguration);
     assertEquals("POST", request.getMethod());
-    assertEquals("/test", request.getPath());
+    assertEquals("/test", request.getRequestURI());
     assertEquals("HTTP/1.0", request.getProtocol());
     assertEquals("10", request.getHeader("CONTENT-LENGTH"));
     assertEquals("\r\nSome  \r\n", request.getBody());
@@ -217,7 +217,7 @@ public class RequestTest {
 
     Request request = new Request(in, serverConfiguration);
     assertEquals("POST", request.getMethod());
-    assertEquals("/test", request.getPath());
+    assertEquals("/test", request.getRequestURI());
     assertEquals("HTTP/1.0", request.getProtocol());
     assertEquals("0", request.getHeader("CONTENT-LENGTH"));
     assertEquals("", request.getBody());
@@ -313,18 +313,18 @@ public class RequestTest {
   }
 
   @Test
-  public void testSetRequestLineMembersAsteriskPathCorrectMethod() throws Exception {
+  public void testSetRequestLineMembersAsteriskRequestURICorrectMethod_RFC2616_5_1_2() throws Exception {
     Request request = new Request(serverConfiguration);
     try {
       request.setRequestLineMembers("OPTIONS * HTTP/1.1");
-      assertEquals("*", request.getPath());
+      assertEquals("*", request.getRequestURI());
     } catch (HttpError e) {
       assertEquals(NOT_IMPLEMENTED, e.getErrorCode());
     }
   }
 
   @Test
-  public void testSetRequestLineMembersAsteriskPathWrongMethod() throws Exception {
+  public void testSetRequestLineMembersAsteriskRequestURIWrongMethod_RFC2616_5_1_2() throws Exception {
     Request request = new Request(serverConfiguration);
     try {
       request.setRequestLineMembers("GET * HTTP/1.1");
@@ -335,27 +335,27 @@ public class RequestTest {
   }
 
   @Test
-  public void testSetRequestLineMembersRelativePath() throws Exception {
+  public void testSetRequestLineMembersRelativeRequestURI_RFC2616_5_1_2() throws Exception {
     Request request = new Request(serverConfiguration);
     request.setRequestLineMembers("GET / HTTP/1.1");
-    assertEquals("/", request.getPath());
+    assertEquals("/", request.getRequestURI());
   }
 
   @Test
-  public void testSetRequestLineMembersAbsolutePath() throws Exception {
+  public void testSetRequestLineMembersAbsoluteRequestURI_RFC2616_5_1_2() throws Exception {
     Request request = new Request(serverConfiguration);
     request.setRequestLineMembers("GET http://google.com/ HTTP/1.1");
-    assertEquals("http://google.com/", request.getPath());
+    assertEquals("http://google.com/", request.getRequestURI());
   }
 
   @Test
-  public void testSetPathTooLongURI() throws Exception {
+  public void testSetRequestURITooLongURI_RFC2616_10_4_15() throws Exception {
     ServerConfiguration config = new ServerConfiguration();
     config.setMaximumURILength(10);
     Request request = new Request(config);
 
     request.setRequestLineMembers("GET /123456789 HTTP/1.1");
-    assertEquals("/123456789", request.getPath());
+    assertEquals("/123456789", request.getRequestURI());
 
     try {
       request.setRequestLineMembers("GET /1234567890 HTTP/1.1");

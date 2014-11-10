@@ -8,7 +8,7 @@ import static core.HttpStatusCode.*;
 
 public class Request extends IncomingHttpMessage {
   private String method;
-  private String path;
+  private String requestURI;
 
   public Request(ServerConfiguration serverConfiguration) {
     this.serverConfiguration = serverConfiguration;
@@ -27,7 +27,7 @@ public class Request extends IncomingHttpMessage {
       if (getHeader("TRANSFER-ENCODING") != null)
         throw new HttpError(NOT_IMPLEMENTED);
 
-      if (getHeader("HOST") == null && path.charAt(0) == '/')
+      if (getHeader("HOST") == null && requestURI.charAt(0) == '/')
         throw new HttpError(BAD_REQUEST);
 
       setBody(readBody(in));
@@ -47,11 +47,11 @@ public class Request extends IncomingHttpMessage {
     String[] splitRequestLine = requestLine.split(" ");
 
     setMethod(splitRequestLine[0]);
-    setPath(splitRequestLine[1]);
+    setRequestURI(splitRequestLine[1]);
     setProtocol(splitRequestLine[2]);
-    setStartLine(getMethod() + " " + getPath() + " " + getProtocol());
+    setStartLine(getMethod() + " " + getRequestURI() + " " + getProtocol());
 
-    if(path.equals("*") && !getMethod().equals("OPTIONS"))
+    if(requestURI.equals("*") && !getMethod().equals("OPTIONS"))
       throw new HttpError(BAD_REQUEST);
   }
 
@@ -65,16 +65,16 @@ public class Request extends IncomingHttpMessage {
     this.method = method;
   }
 
-  public void setPath(String path) {
-    this.path = path;
+  public void setRequestURI(String requestURI) {
+    this.requestURI = requestURI;
     throwHttpErrorExceptionIfPathIsInvalid();
   }
 
   public void throwHttpErrorExceptionIfPathIsInvalid() {
-    if (path.length() > serverConfiguration.getMaximumURILength())
+    if (requestURI.length() > serverConfiguration.getMaximumURILength())
       throw new HttpError(REQUEST_URI_TOO_LONG);
 
-    if (path.indexOf("/")!=0 && path.indexOf("http")!=0 && !path.equals("*"))
+    if (requestURI.indexOf("/")!=0 && requestURI.indexOf("http")!=0 && !requestURI.equals("*"))
       throw new HttpError(BAD_REQUEST);
   }
 
@@ -82,8 +82,8 @@ public class Request extends IncomingHttpMessage {
     return method;
   }
 
-  public String getPath() {
-    return path;
+  public String getRequestURI() {
+    return requestURI;
   }
 
 }
