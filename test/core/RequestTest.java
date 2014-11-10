@@ -7,7 +7,7 @@ import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 
 import static core.HttpStatusCode.*;
-import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.*;
 
 public class RequestTest {
 
@@ -310,5 +310,57 @@ public class RequestTest {
     Request request = new Request(serverConfiguration);
     request.setHeader("Cache-Control", "no-cache");
     assertEquals("Cache-Control", request.getHeaders().keySet().iterator().next());
+  }
+
+  @Test
+  public void testSetRequestLineMembersAsteriskPathCorrectMethod() throws Exception {
+    Request request = new Request(serverConfiguration);
+    try {
+      request.setRequestLineMembers("OPTIONS * HTTP/1.1");
+      assertEquals("*", request.getPath());
+    } catch (HttpError e) {
+      assertEquals(NOT_IMPLEMENTED, e.getErrorCode());
+    }
+  }
+
+  @Test
+  public void testSetRequestLineMembersAsteriskPathWrongMethod() throws Exception {
+    Request request = new Request(serverConfiguration);
+    try {
+      request.setRequestLineMembers("GET * HTTP/1.1");
+      fail();
+    } catch (HttpError e) {
+      assertTrue(e.getErrorCode().equals(BAD_REQUEST));
+    }
+  }
+
+  @Test
+  public void testSetRequestLineMembersRelativePath() throws Exception {
+    Request request = new Request(serverConfiguration);
+    request.setRequestLineMembers("GET / HTTP/1.1");
+    assertEquals("/", request.getPath());
+  }
+
+  @Test
+  public void testSetRequestLineMembersAbsolutePath() throws Exception {
+    Request request = new Request(serverConfiguration);
+    request.setRequestLineMembers("GET http://google.com/ HTTP/1.1");
+    assertEquals("http://google.com/", request.getPath());
+  }
+
+  @Test
+  public void testSetPathTooLongURI() throws Exception {
+    ServerConfiguration config = new ServerConfiguration();
+    config.setMaximumURILength(10);
+    Request request = new Request(config);
+
+    request.setRequestLineMembers("GET /123456789 HTTP/1.1");
+    assertEquals("/123456789", request.getPath());
+
+    try {
+      request.setRequestLineMembers("GET /1234567890 HTTP/1.1");
+    } catch (HttpError e) {
+      assertEquals(REQUEST_URI_TOO_LONG, e.getErrorCode());
+    }
   }
 }

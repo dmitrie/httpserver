@@ -2,7 +2,6 @@ package core;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.Arrays;
 
 import static core.HttpRequestRegEx.*;
 import static core.HttpStatusCode.*;
@@ -33,8 +32,9 @@ public class Request extends IncomingHttpMessage {
 
       setBody(readBody(in));
 
-      if (getBody() != null && !getHeader("Content-Length").equals("" + getContentLength()))
+      if (getBody() != null && !getHeader("Content-Length").equals(getContentLength()))
          throw new HttpError(BAD_REQUEST);
+
     } catch (HttpError e) {
      setResponseStatusCode(e.getErrorCode());
     }
@@ -50,23 +50,32 @@ public class Request extends IncomingHttpMessage {
     setPath(splitRequestLine[1]);
     setProtocol(splitRequestLine[2]);
     setStartLine(getMethod() + " " + getPath() + " " + getProtocol());
+
+    if(path.equals("*") && !getMethod().equals("OPTIONS"))
+      throw new HttpError(BAD_REQUEST);
   }
 
   public void setMethod(String method) {
     if (!validateMethod(method))
       throw new HttpError(BAD_REQUEST);
 
-    if (!Arrays.asList("GET", "POST", "HEAD").contains(method))
+    if (!serverConfiguration.getImplementedMethods().contains(method))
       throw new HttpError(NOT_IMPLEMENTED);
 
     this.method = method;
   }
 
   public void setPath(String path) {
+    this.path = path;
+    throwHttpErrorExceptionIfPathIsInvalid();
+  }
+
+  public void throwHttpErrorExceptionIfPathIsInvalid() {
     if (path.length() > serverConfiguration.getMaximumURILength())
       throw new HttpError(REQUEST_URI_TOO_LONG);
 
-    this.path = path;
+    if (path.indexOf("/")!=0 && path.indexOf("http")!=0 && !path.equals("*"))
+      throw new HttpError(BAD_REQUEST);
   }
 
   public String getMethod() {
