@@ -248,6 +248,18 @@ public class RequestTest {
   }
 
   @Test
+  public void testConstructorContentLengthIsNotInteger_RFC2616_4_4() throws Exception {
+    String requestString = "POST /test HTTP/1.0\r\n" +
+      "Host: www.google.com\r\n" +
+      "Content-length: 1.1\r\n\r\n" +
+      "\r\nSome  \r\n  body  here\r\n";
+    InputStream in = new ByteArrayInputStream(requestString.getBytes());
+
+    Request request = new Request(in, serverConfiguration);
+    assertEquals(BAD_REQUEST, request.getResponseStatusCode());
+  }
+
+  @Test
   public void testConstructorInvalidRequestLine_RFC2616_5_1() throws Exception {
     String requestString = "GET /some file name with spaces.html HTTP/1.1\r\n\r\n";
     InputStream in = new ByteArrayInputStream(requestString.getBytes());
