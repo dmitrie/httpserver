@@ -9,15 +9,15 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
+import java.util.LinkedHashMap;
+import java.util.Map;
+import java.util.regex.Pattern;
 
 public class Server {
   private ServerConfiguration serverConfiguration;
   private ServerSocket serverSocket;
   private boolean serverIsRunning = false;
-
-  public static void main(String[] args) throws IOException {
-    new Server().start();
-  }
+  public Map<Pattern, Handler> handlers = new LinkedHashMap<>();
 
   public Server(ServerConfiguration serverConfiguration) throws IOException {
     this.serverConfiguration = serverConfiguration;
@@ -32,16 +32,12 @@ public class Server {
   public void start() {
     serverIsRunning = true;
     while(serverIsRunning) {
-      handleRequest();
-    }
-  }
-
-  public void handleRequest() {
-    try {
-      new RequestHandler(serverSocket.accept(), serverConfiguration).start();
-    } catch (Exception e) {
-      System.out.println("Exception caught when listening for a connection");
-      System.out.println(e.getMessage());
+      try {
+        new RequestHandler(serverSocket.accept(), serverConfiguration, handlers).start();
+      } catch (Exception e) {
+        System.out.println("Exception caught when listening for a connection");
+        System.out.println(e.getMessage());
+      }
     }
   }
 
@@ -75,6 +71,18 @@ public class Server {
 
   public ServerConfiguration getServerConfiguration() {
     return serverConfiguration;
+  }
+
+  public Map<Pattern, Handler> getHandlers() {
+    return handlers;
+  }
+
+  public void setHandlers(Map<Pattern, Handler> handlers) {
+    this.handlers = handlers;
+  }
+
+  public void setHandler(String pattern, Handler handler) {
+    this.handlers.put(Pattern.compile(pattern), handler);
   }
 
   public void stop() throws IOException {

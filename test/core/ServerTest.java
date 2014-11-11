@@ -23,6 +23,7 @@ public class ServerTest {
     do {
       try {
         server = new Server(getConfiguration());
+        server.setHandler(".*", StartServer::htmlFileHandler);
         serverThread = new Thread(server::start);
         serverThread.start();
         return;
