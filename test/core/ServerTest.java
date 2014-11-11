@@ -78,20 +78,27 @@ public class ServerTest {
 
   @Test
   public void testHtmlFileHandlerSuccessFileWithSpaceInNameReturned() throws Exception {
+    IncomingHttpMessage response = sendRequest(
+      "GET /folder/test%20file%201.html HTTP/1.1\r\nHost: localhost\r\n\r\n");
+
+    assertEquals("HTTP/1.1 " + OK, response.getStartLine());
+    assertEquals("28", response.getHeader("Content-length"));
+    assertEquals("<h2>Example 1 in folder</h2>", response.getBody());
+  }
+
+  public IncomingHttpMessage sendRequest(String request) throws IOException {
+    IncomingHttpMessage serverResponse;
     try (
       Socket clientSocket = new Socket("localhost", 8361);
       PrintWriter out = new PrintWriter(clientSocket.getOutputStream(), true);
       InputStream in = clientSocket.getInputStream()
     ) {
-      out.write("GET /folder/test%20file%201.html HTTP/1.1\r\nHost: localhost\r\n\r\n");
+      out.write(request);
       out.flush();
 
-      IncomingHttpMessage serverResponse = readServerResponse(in);
-
-      assertEquals("HTTP/1.1 " + OK, serverResponse.getStartLine());
-      assertEquals("28", serverResponse.getHeader("Content-length"));
-      assertEquals("<h2>Example 1 in folder</h2>", serverResponse.getBody());
+      serverResponse = readServerResponse(in);
     }
+    return serverResponse;
   }
 
   @Test
@@ -110,16 +117,7 @@ public class ServerTest {
 
   @Test
   public void testHtmlFileHandlerBadRequest() throws Exception {
-    try (
-      Socket clientSocket = new Socket("localhost", 8361);
-      PrintWriter out = new PrintWriter(clientSocket.getOutputStream(), true);
-      InputStream in = clientSocket.getInputStream()
-    ) {
-      out.write("foo bar\r\n\r\n");
-      out.flush();
-
-      assertEquals("HTTP/1.1 " + BAD_REQUEST, readServerResponse(in).getStartLine());
-    }
+    assertEquals("HTTP/1.1 " + BAD_REQUEST, sendRequest("foo bar\r\n\r\n").getStartLine());
   }
 
   @Test
