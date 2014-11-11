@@ -1,5 +1,7 @@
 package core;
 
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -13,6 +15,8 @@ public class ServerConfiguration {
     add("POST");
     add("HEAD");
   }};
+  private boolean absoluteUriIsAllowed = false;
+  private Charset defaultCharset = StandardCharsets.UTF_8;
 
   public int getMaximumURILength() {
     return maximumURILength;
@@ -34,6 +38,14 @@ public class ServerConfiguration {
     return implementedMethods;
   }
 
+  public boolean isAbsoluteUriIsAllowed() {
+    return absoluteUriIsAllowed;
+  }
+
+  public Charset getDefaultCharset() {
+    return defaultCharset;
+  }
+
   public void setMaximumURILength(int maximumURILength) {
     this.maximumURILength = maximumURILength;
   }
@@ -52,5 +64,13 @@ public class ServerConfiguration {
 
   public void setImplementedMethods(List<String> implementedMethods) {
     this.implementedMethods = implementedMethods;
+  }
+
+  public void setAbsoluteUriIsAllowed(boolean absoluteUriIsAllowed) {
+    this.absoluteUriIsAllowed = absoluteUriIsAllowed;
+  }
+
+  public void setDefaultCharset(Charset defaultCharset) {
+    this.defaultCharset = defaultCharset;
   }
 }

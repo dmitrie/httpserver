@@ -1,7 +1,5 @@
 package core;
 
-import java.io.UnsupportedEncodingException;
-
 public class Response extends HttpMessage {
   private Request request;
 
@@ -36,12 +34,9 @@ public class Response extends HttpMessage {
   @Override
   public String generateMessage() {
     setStartLine(getProtocol() + " " + getResponseStatusCode());
-    try {
-      if (getBody() != null)
-        setHeader("Content-Length", getContentLength());
-    } catch (UnsupportedEncodingException e) {
-      throw new RuntimeException(e.getMessage());
-    }
+
+    if (getBody() != null)
+      setHeader("Content-Length", getContentLength());
 
     return super.generateMessage();
   }

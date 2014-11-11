@@ -2,20 +2,19 @@ package core;
 
 import org.springframework.util.LinkedCaseInsensitiveMap;
 
-import java.io.UnsupportedEncodingException;
 import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.util.Map;
 import java.util.stream.Collectors;
 
 import static core.HttpRequestRegEx.CRLF;
-import static java.nio.charset.Charset.forName;
 
 public class HttpMessage {
   protected String protocol;
   protected String startLine;
   protected Map<String, String> headers = new LinkedCaseInsensitiveMap();
   protected String body;
-  protected Charset bodyEncoding = forName("ISO-8859-1");
+  protected Charset bodyEncoding = StandardCharsets.ISO_8859_1;
   protected HttpStatusCode responseStatusCode;
   protected ServerConfiguration serverConfiguration;
 
@@ -37,7 +36,7 @@ public class HttpMessage {
     return message;
   }
 
-  public String getContentLength() throws UnsupportedEncodingException {
+  public String getContentLength() {
     return "" + getBody().getBytes(getBodyEncoding()).length;
   }
 

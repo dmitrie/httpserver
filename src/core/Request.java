@@ -2,13 +2,20 @@ package core;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.UnsupportedEncodingException;
+import java.net.*;
+import java.util.LinkedHashMap;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
 
 import static core.HttpRequestRegEx.*;
 import static core.HttpStatusCode.*;
 
 public class Request extends IncomingHttpMessage {
   private String method;
-  private String requestURI;
+  private URI requestURI;
+  private Map<String, List<String>> queryParameters;
 
   public Request(ServerConfiguration serverConfiguration) {
     this.serverConfiguration = serverConfiguration;
@@ -18,7 +25,6 @@ public class Request extends IncomingHttpMessage {
     this.serverConfiguration = serverConfiguration;
     try {
       String[] requestLineAndHeaders = readStartLineAndHeaders(in).split(CRLF,2);
-      setRequestLineMembers(requestLineAndHeaders[0]);
 
       if (requestLineAndHeaders.length == 2) {
         parseAndSetHeaders(requestLineAndHeaders[1]);
@@ -27,8 +33,7 @@ public class Request extends IncomingHttpMessage {
       if (getHeader("TRANSFER-ENCODING") != null)
         throw new HttpError(NOT_IMPLEMENTED);
 
-      if (getHeader("HOST") == null && requestURI.charAt(0) == '/')
-        throw new HttpError(BAD_REQUEST);
+      setRequestLineMembers(requestLineAndHeaders[0]);
 
       setBody(readBody(in));
 
@@ -49,10 +54,19 @@ public class Request extends IncomingHttpMessage {
     setMethod(splitRequestLine[0]);
     setRequestURI(splitRequestLine[1]);
     setProtocol(splitRequestLine[2]);
-    setStartLine(getMethod() + " " + getRequestURI() + " " + getProtocol());
 
-    if(requestURI.equals("*") && !getMethod().equals("OPTIONS"))
-      throw new HttpError(BAD_REQUEST);
+    setStartLine(getMethod() + " " +
+                 getParsedRequestURIAsRequested(splitRequestLine[1]) + " " +
+                 getProtocol());
+  }
+
+  public String getParsedRequestURIAsRequested(String rawURI) {
+    if (rawURI.equals("*"))
+      return "*";
+    else if (rawURI.charAt(0) == '/')
+      return getRequestURI().getPath();
+    else
+      return getRequestURI().toString();
   }
 
   public void setMethod(String method) {
@@ -65,16 +79,58 @@ public class Request extends IncomingHttpMessage {
     this.method = method;
   }
 
-  public void setRequestURI(String requestURI) {
-    this.requestURI = requestURI;
-    throwHttpErrorExceptionIfPathIsInvalid();
+  public void setRequestURI(String uriString) {
+    throwHttpErrorIfUriIsNotValid(uriString);
+
+    try {
+      if (uriString.equals("*")) {
+        this.requestURI = null;
+      } else {
+        URI uri = new URI((getHeader("HOST") == null? "" : "http://" + getHeader("HOST")) + uriString);
+        setQueryParameters(uri);
+        this.requestURI = uri;
+      }
+    } catch (MalformedURLException | URISyntaxException e) {
+      throw new HttpError(BAD_REQUEST);
+    } catch (UnsupportedEncodingException e) {
+      throw new RuntimeException(e.getMessage());
+    }
   }
 
-  public void throwHttpErrorExceptionIfPathIsInvalid() {
-    if (requestURI.length() > serverConfiguration.getMaximumURILength())
+  public void setQueryParameters(URI uri) throws UnsupportedEncodingException, MalformedURLException {
+    URL url = uri.toURL();
+    setQueryParameters(new LinkedHashMap<String, List<String>>());
+    if (url.getQuery() != null) {
+      String[] parameters = url.getQuery().split("&");
+      for (String parameter : parameters) {
+        String[] splitParameter = parameter.split("=", 2);
+
+        String key = URLDecoder.decode(splitParameter[0], serverConfiguration.getDefaultCharset().name());
+        List<String> value = queryParameters.getOrDefault(key, new LinkedList<String>());
+        if (splitParameter.length == 2)
+          value.add(URLDecoder.decode(splitParameter[1], serverConfiguration.getDefaultCharset().name()));
+        else
+          value.add(null);
+
+        queryParameters.put(key, value);
+      }
+    }
+  }
+
+  public void throwHttpErrorIfUriIsNotValid(String uri) {
+    if (uri.indexOf("/")!=0 && uri.indexOf("http")!=0 && !uri.equals("*"))
+      throw new HttpError(BAD_REQUEST);
+
+    if (getHeader("HOST") == null && uri.charAt(0) == '/')
+      throw new HttpError(BAD_REQUEST);
+
+    if (uri.length() > serverConfiguration.getMaximumURILength())
       throw new HttpError(REQUEST_URI_TOO_LONG);
 
-    if (requestURI.indexOf("/")!=0 && requestURI.indexOf("http")!=0 && !requestURI.equals("*"))
+    if (uri.indexOf("http")==0 && !getServerConfiguration().isAbsoluteUriIsAllowed())
+      throw new HttpError(BAD_REQUEST);
+
+    if(uri.equals("*") && !getMethod().equals("OPTIONS"))
       throw new HttpError(BAD_REQUEST);
   }
 
@@ -82,8 +138,19 @@ public class Request extends IncomingHttpMessage {
     return method;
   }
 
-  public String getRequestURI() {
+  public URI getRequestURI() {
     return requestURI;
   }
 
+  public Map<String, List<String>> getQueryParameters() {
+    return queryParameters;
+  }
+
+  public void setRequestURI(URI requestURI) {
+    this.requestURI = requestURI;
+  }
+
+  public void setQueryParameters(Map<String, List<String>> queryParameters) {
+    this.queryParameters = queryParameters;
+  }
 }

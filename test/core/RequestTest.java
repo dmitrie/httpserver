@@ -1,5 +1,6 @@
 package core;
 
+import org.junit.Before;
 import org.junit.Test;
 import org.springframework.util.LinkedCaseInsensitiveMap;
 
@@ -12,6 +13,11 @@ import static org.junit.Assert.*;
 public class RequestTest {
 
   ServerConfiguration serverConfiguration = new ServerConfiguration();
+
+  @Before
+  public void setUp() throws Exception {
+    serverConfiguration.setAbsoluteUriIsAllowed(true);
+  }
 
   @Test
   public void testConstructorUseLFInsteadOfCRLF_RFC2616_2_2() throws Exception {
@@ -39,7 +45,7 @@ public class RequestTest {
 
     Request request = new Request(in, serverConfiguration);
     assertEquals("GET", request.getMethod());
-    assertEquals("http://google.com", request.getRequestURI());
+    assertEquals("http://google.com", request.getRequestURI().toString());
     assertEquals("HTTP/1.1", request.getProtocol());
 
     assertEquals(requestString, request.generateMessage());
@@ -56,7 +62,7 @@ public class RequestTest {
 
     Request request = new Request(in, serverConfiguration);
     assertEquals("HEAD", request.getMethod());
-    assertEquals("/test.html", request.getRequestURI());
+    assertEquals("/test.html", request.getRequestURI().getPath());
     assertEquals("HTTP/1.0", request.getProtocol());
     assertEquals("www.google.com", request.getHeader("HOST"));
     assertEquals("text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8", request.getHeader("ACCEPT"));
@@ -76,7 +82,7 @@ public class RequestTest {
 
     Request request = new Request(in, serverConfiguration);
     assertEquals("POST", request.getMethod());
-    assertEquals("/test", request.getRequestURI());
+    assertEquals("/test", request.getRequestURI().getPath());
     assertEquals("HTTP/1.0", request.getProtocol());
     assertEquals("24", request.getHeader("CONTENT-LENGTH"));
     assertEquals("\r\nSome  \r\n  body  here\r\n", request.getBody());
@@ -176,7 +182,7 @@ public class RequestTest {
 
     Request request = new Request(in, serverConfiguration);
     assertEquals("HEAD", request.getMethod());
-    assertEquals("http://google.com/test.html", request.getRequestURI());
+    assertEquals("http://google.com/test.html", request.getRequestURI().toString());
     assertEquals("HTTP/1.0", request.getProtocol());
     assertEquals("no-cache, no-store", request.getHeader("CACHE-CONTROL"));
 
@@ -195,8 +201,9 @@ public class RequestTest {
 
     Request request = new Request(in, serverConfiguration);
     assertEquals("POST", request.getMethod());
-    assertEquals("/test", request.getRequestURI());
+    assertEquals("/test", request.getRequestURI().getPath());
     assertEquals("HTTP/1.0", request.getProtocol());
+    assertEquals("www.google.com", request.getHeader("host"));
     assertEquals("10", request.getHeader("CONTENT-LENGTH"));
     assertEquals("\r\nSome  \r\n", request.getBody());
 
@@ -217,7 +224,7 @@ public class RequestTest {
 
     Request request = new Request(in, serverConfiguration);
     assertEquals("POST", request.getMethod());
-    assertEquals("/test", request.getRequestURI());
+    assertEquals("/test", request.getRequestURI().getPath());
     assertEquals("HTTP/1.0", request.getProtocol());
     assertEquals("0", request.getHeader("CONTENT-LENGTH"));
     assertEquals("", request.getBody());
@@ -288,7 +295,7 @@ public class RequestTest {
 
   @Test
   public void testConstructorUnsupportedProtocol_RFC2616_10_5_6() throws Exception {
-    String requestString = "GET / HTTP/0.9\r\n\r\n";
+    String requestString = "GET http://google.com/ HTTP/0.9\r\n\r\n";
     InputStream in = new ByteArrayInputStream(requestString.getBytes());
 
     Request request = new Request(in, serverConfiguration);
@@ -314,13 +321,15 @@ public class RequestTest {
 
   @Test
   public void testSetRequestLineMembersAsteriskRequestURICorrectMethod_RFC2616_5_1_2() throws Exception {
-    Request request = new Request(serverConfiguration);
-    try {
-      request.setRequestLineMembers("OPTIONS * HTTP/1.1");
-      assertEquals("*", request.getRequestURI());
-    } catch (HttpError e) {
-      assertEquals(NOT_IMPLEMENTED, e.getErrorCode());
-    }
+    ServerConfiguration config = new ServerConfiguration();
+    config.getImplementedMethods().add("OPTIONS");
+
+    Request request = new Request(config);
+    request.setHeader("host", "www.google.com");
+    request.setRequestLineMembers("GET / HTTP/1.1");
+    request.setRequestLineMembers("OPTIONS * HTTP/1.1");
+
+    assertEquals(null, request.getRequestURI());
   }
 
   @Test
@@ -337,15 +346,16 @@ public class RequestTest {
   @Test
   public void testSetRequestLineMembersRelativeRequestURI_RFC2616_5_1_2() throws Exception {
     Request request = new Request(serverConfiguration);
-    request.setRequestLineMembers("GET / HTTP/1.1");
-    assertEquals("/", request.getRequestURI());
+    request.setHeader("Host", "www.google.com");
+    request.setRequestLineMembers("GET /test.html HTTP/1.1");
+    assertEquals("http://www.google.com/test.html", request.getRequestURI().toString());
   }
 
   @Test
   public void testSetRequestLineMembersAbsoluteRequestURI_RFC2616_5_1_2() throws Exception {
     Request request = new Request(serverConfiguration);
-    request.setRequestLineMembers("GET http://google.com/ HTTP/1.1");
-    assertEquals("http://google.com/", request.getRequestURI());
+    request.setRequestLineMembers("GET http://google.com/test.html HTTP/1.1");
+    assertEquals("http://google.com/test.html", request.getRequestURI().toString());
   }
 
   @Test
@@ -354,13 +364,123 @@ public class RequestTest {
     config.setMaximumURILength(10);
     Request request = new Request(config);
 
+    request.setHeader("Host", "www.google.com");
     request.setRequestLineMembers("GET /123456789 HTTP/1.1");
-    assertEquals("/123456789", request.getRequestURI());
+    assertEquals("/123456789", request.getRequestURI().getPath());
 
     try {
       request.setRequestLineMembers("GET /1234567890 HTTP/1.1");
     } catch (HttpError e) {
       assertEquals(REQUEST_URI_TOO_LONG, e.getErrorCode());
     }
+  }
+
+  @Test
+  public void testSetRequestURInvalidHost() throws Exception {
+    Request request = new Request(serverConfiguration);
+    request.setHeader("Host", "#$%&");
+
+    try {
+      request.setRequestLineMembers("GET /test HTTP/1.1");
+      fail();
+    } catch (HttpError e) {
+      assertEquals(BAD_REQUEST, e.getErrorCode());
+    }
+  }
+
+  @Test
+  public void testSetRequestURIInvalidAbsPath() throws Exception {
+    Request request = new Request(serverConfiguration);
+    request.setHeader("Host", "www.google.com");
+
+    try {
+      request.setRequestLineMembers("GET test HTTP/1.1");
+      fail();
+    } catch (HttpError e) {
+      assertEquals(BAD_REQUEST, e.getErrorCode());
+    }
+  }
+
+  @Test
+  public void testSetRequestURIAbsoluteUriIsNotAllowed() throws Exception {
+    ServerConfiguration config = new ServerConfiguration();
+    Request request = new Request(config);
+
+    config.setAbsoluteUriIsAllowed(true);
+    request.setRequestLineMembers("GET http://www.google.com/ HTTP/1.1");
+    assertEquals("http://www.google.com/", request.getRequestURI().toString());
+
+    config.setAbsoluteUriIsAllowed(false);
+    try {
+      request.setRequestLineMembers("GET http://www.google.com/ HTTP/1.1");
+      fail();
+    } catch (HttpError e) {
+      assertEquals(BAD_REQUEST, e.getErrorCode());
+    }
+  }
+
+  @Test
+  public void testSetRequestURIRelativeURIContainsPort() throws Exception {
+    Request request = new Request(serverConfiguration);
+    request.setHeader("host", "www.google.com:8888");
+    request.setRequestLineMembers("GET / HTTP/1.1");
+
+    assertEquals("www.google.com", request.getRequestURI().getHost());
+    assertEquals(8888, request.getRequestURI().getPort());
+    assertEquals("/", request.getRequestURI().getPath());
+    assertEquals("http://www.google.com:8888/", request.getRequestURI().toString());
+  }
+
+  @Test
+  public void testSetRequestURIAbsoluteURIContainsPort() throws Exception {
+    Request request = new Request(serverConfiguration);
+    request.setRequestLineMembers("GET http://www.google.com:8888/ HTTP/1.1");
+
+    assertEquals("www.google.com", request.getRequestURI().getHost());
+    assertEquals(8888, request.getRequestURI().getPort());
+    assertEquals("/", request.getRequestURI().getPath());
+    assertEquals("http://www.google.com:8888/", request.getRequestURI().toString());
+  }
+
+  @Test
+  public void testSetRequestURIContainsFragment() throws Exception {
+    Request request = new Request(serverConfiguration);
+    request.setHeader("host", "www.google.com");
+    request.setRequestLineMembers("GET /?a=b#abc HTTP/1.1");
+
+    assertEquals("/", request.getRequestURI().getPath());
+    assertEquals("a=b", request.getRequestURI().getQuery());
+    assertEquals("abc", request.getRequestURI().getFragment());
+    assertEquals("http://www.google.com/?a=b#abc", request.getRequestURI().toString());
+  }
+
+  @Test
+  public void testSetRequestQueryIsCorrectlyParsed() throws Exception {
+    Request request = new Request(serverConfiguration);
+    request.setHeader("host", "www.google.com");
+    request.setRequestLineMembers("GET /test?a&b=1&&c=&d=5&d&a=8&d=abc%20d HTTP/1.1");
+
+    assertEquals("/test", request.getRequestURI().getPath());
+    assertEquals(null, request.getQueryParameters().get("a").get(0));
+    assertEquals("1", request.getQueryParameters().get("b").get(0));
+    assertEquals("", request.getQueryParameters().get("c").get(0));
+    assertEquals("5", request.getQueryParameters().get("d").get(0));
+    assertEquals(null, request.getQueryParameters().get("d").get(1));
+    assertEquals("8", request.getQueryParameters().get("a").get(1));
+    assertEquals("abc d", request.getQueryParameters().get("d").get(2));
+  }
+
+  @Test
+  public void testSetRequestQueryContainsEncodedDelimiters() throws Exception {
+    Request request = new Request(serverConfiguration);
+    request.setHeader("host", "www.google.com");
+    request.setRequestLineMembers("GET /test?a=A%26B&b=c%26d%3De HTTP/1.1");
+
+    assertEquals("/test", request.getRequestURI().getPath());
+    assertEquals("a=A&B&b=c&d=e", request.getRequestURI().getQuery());
+    assertEquals("a=A%26B&b=c%26d%3De", request.getRequestURI().toURL().getQuery());
+    assertEquals("A&B", request.getQueryParameters().get("a").get(0));
+    assertEquals("c&d=e", request.getQueryParameters().get("b").get(0));
+    assertEquals("http://www.google.com/test?a=A%26B&b=c%26d%3De", request.getRequestURI().toString());
   }
 }

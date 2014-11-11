@@ -1,6 +1,9 @@
 package core;
 
-import java.io.*;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.PrintWriter;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.SocketTimeoutException;
@@ -72,20 +75,20 @@ public class Server {
     }
   }
 
-  public void respondWithError(PrintWriter out, Request request, HttpStatusCode code) throws UnsupportedEncodingException {
+  public void respondWithError(PrintWriter out, Request request, HttpStatusCode code) {
     Response response = new Response(request);
     response.setErrorBodyAndHeaders(code);
     out.write(response.generateMessage());
     out.flush();
   }
 
-  public Response htmlFileHandler(Request request) throws UnsupportedEncodingException {
+  public Response htmlFileHandler(Request request) {
     Response response = new Response(request);
     if (response.getResponseStatusCode() != null)
       return response;
 
     try {
-      response.setBody(readFile(combinePaths(serverConfiguration.getDocumentRootPath(), request.getRequestURI()), StandardCharsets.UTF_8));
+      response.setBody(readFile(combinePaths(serverConfiguration.getDocumentRootPath(), request.getRequestURI().getPath()), StandardCharsets.UTF_8));
       response.setResponseStatusCode(OK);
     } catch (IOException e) {
       response.setErrorBodyAndHeaders(NOT_FOUND);

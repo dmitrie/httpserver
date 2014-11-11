@@ -1,5 +1,6 @@
 package core;
 
+import org.junit.Before;
 import org.junit.Test;
 import org.springframework.util.LinkedCaseInsensitiveMap;
 
@@ -13,6 +14,11 @@ import static org.junit.Assert.assertEquals;
 public class ResponseTest {
 
   ServerConfiguration serverConfiguration = new ServerConfiguration();
+
+  @Before
+  public void setUp() throws Exception {
+    serverConfiguration.setAbsoluteUriIsAllowed(true);
+  }
 
   @Test
   public void testConstructorUsesErrorFromRequest() throws Exception {
