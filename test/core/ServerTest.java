@@ -20,7 +20,6 @@ public class ServerTest {
 
   @Before
   public void setUp() throws Exception {
-    boolean exceptionCaught;
     int numberOfAttempts = 5;
     do {
       try {
@@ -29,16 +28,13 @@ public class ServerTest {
         serverConfiguration.setDocumentRootPath("/home/kool/IdeaProjects/httpserver/test/web/");
         serverConfiguration.setRequestTimeOut(500);
         server = new Server(serverConfiguration);
-        serverThread = new Thread(() -> {
-          server.start();
-        });
+        serverThread = new Thread(() -> { server.start(); });
         serverThread.start();
-        exceptionCaught = false;
+        return;
       } catch (Exception e) {
-        exceptionCaught = true;
         Thread.sleep(500);
       }
-    } while (exceptionCaught && numberOfAttempts-- > 0);
+    } while (numberOfAttempts-- > 0);
   }
 
   @After
@@ -58,11 +54,28 @@ public class ServerTest {
       out.flush();
 
       IncomingHttpMessage serverResponse = readServerResponse(in);
-      String expectedBody = Server.readFile(Server.combinePaths(serverConfiguration.getDocumentRootPath(), "test.html"), new Response(new Request(server.getServerConfiguration())).getBodyEncoding());
 
       assertEquals("HTTP/1.1 " + OK, serverResponse.getStartLine());
-      assertEquals("" + expectedBody.getBytes(serverResponse.getBodyEncoding()).length, serverResponse.getHeader("Content-length"));
-      assertEquals(expectedBody, serverResponse.getBody());
+      assertEquals("16", serverResponse.getHeader("Content-length"));
+      assertEquals("<h1>Example</h1>", serverResponse.getBody());
+    }
+  }
+
+  @Test
+  public void testHtmlFileHandlerSuccessFileWithSpaceInNameReturned() throws Exception {
+    try (
+      Socket clientSocket = new Socket("localhost", 8361);
+      PrintWriter out = new PrintWriter(clientSocket.getOutputStream(), true);
+      InputStream in = clientSocket.getInputStream();
+    ) {
+      out.write("GET /folder/test%20file%201.html HTTP/1.1\r\nHost: localhost\r\n\r\n");
+      out.flush();
+
+      IncomingHttpMessage serverResponse = readServerResponse(in);
+
+      assertEquals("HTTP/1.1 " + OK, serverResponse.getStartLine());
+      assertEquals("28", serverResponse.getHeader("Content-length"));
+      assertEquals("<h2>Example 1 in folder</h2>", serverResponse.getBody());
     }
   }
 
