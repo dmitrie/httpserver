@@ -2,19 +2,13 @@ package core;
 
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.PrintWriter;
 import java.net.ServerSocket;
-import java.net.Socket;
-import java.net.SocketTimeoutException;
 import java.nio.charset.Charset;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
-
-import static core.HttpStatusCode.*;
 
 public class Server {
   private ServerConfiguration serverConfiguration;
@@ -22,8 +16,7 @@ public class Server {
   private boolean serverIsRunning = false;
 
   public static void main(String[] args) throws IOException {
-    Server server = new Server();
-    server.start();
+    new Server().start();
   }
 
   public Server(ServerConfiguration serverConfiguration) throws IOException {
@@ -44,60 +37,19 @@ public class Server {
   }
 
   public void handleRequest() {
-    try (
-      Socket clientSocket = serverSocket.accept();
-      PrintWriter out = new PrintWriter(clientSocket.getOutputStream(), true);
-      InputStream in = clientSocket.getInputStream();
-    ) {
-      clientSocket.setSoTimeout(serverConfiguration.getRequestTimeOut());
-
-      Request request = new Request(serverConfiguration);
-      try {
-        request = new Request(in, serverConfiguration);
-      } catch (SocketTimeoutException e) {
-        respondWithError(out, request, REQUEST_TIMEOUT);
-      } catch (Exception e) {
-        respondWithError(out, request, INTERNAL_SERVER_ERROR);
-      }
-
-      try {
-        Response response = htmlFileHandler(request);
-
-        out.write(response.generateMessage());
-        out.flush();
-      } catch (Exception e) {
-        respondWithError(out, request, INTERNAL_SERVER_ERROR);
-      }
-    }
-    catch (Exception e) {
+    try {
+      new RequestHandler(serverSocket.accept(), serverConfiguration).start();
+    } catch (Exception e) {
       System.out.println("Exception caught when listening for a connection");
       System.out.println(e.getMessage());
     }
   }
 
-  public void respondWithError(PrintWriter out, Request request, HttpStatusCode code) {
+  public static void respondWithError(PrintWriter out, Request request, HttpStatusCode code) {
     Response response = new Response(request);
     response.setErrorBodyAndHeaders(code);
     out.write(response.generateMessage());
     out.flush();
-  }
-
-  public Response htmlFileHandler(Request request) {
-    Response response = new Response(request);
-    if (response.getResponseStatusCode() != null)
-      return response;
-
-    try {
-      response.setBody(readFile(combinePaths(serverConfiguration.getDocumentRootPath(), request.getRequestURI().getPath()), StandardCharsets.UTF_8));
-      response.setResponseStatusCode(OK);
-    } catch (IOException e) {
-      response.setErrorBodyAndHeaders(NOT_FOUND);
-      return response;
-    }
-
-    response.setHeader("Content-Type", "text/html; charset=" + response.getBodyEncoding());
-    response.setHeader("Last-modified", getServerTime());
-    return response;
   }
 
   public static String getServerTime() {
