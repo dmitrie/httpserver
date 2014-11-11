@@ -16,19 +16,14 @@ import static org.junit.Assert.assertEquals;
 public class ServerTest {
   Thread serverThread;
   Server server;
-  ServerConfiguration serverConfiguration;
 
   @Before
   public void setUp() throws Exception {
     int numberOfAttempts = 5;
     do {
       try {
-        serverConfiguration = new ServerConfiguration();
-        serverConfiguration.setPortNumber(8361);
-        serverConfiguration.setDocumentRootPath("/home/kool/IdeaProjects/httpserver/test/web/");
-        serverConfiguration.setRequestTimeOut(500);
-        server = new Server(serverConfiguration);
-        serverThread = new Thread(() -> { server.start(); });
+        server = new Server(getConfiguration());
+        serverThread = new Thread(server::start);
         serverThread.start();
         return;
       } catch (Exception e) {
@@ -43,12 +38,32 @@ public class ServerTest {
     serverThread.interrupt();
   }
 
+  private ServerConfiguration getConfiguration() {
+    ServerConfiguration serverConfiguration = new ServerConfiguration();
+    serverConfiguration.setPortNumber(8361);
+    serverConfiguration.setDocumentRootPath("/home/kool/IdeaProjects/httpserver/test/web/");
+    serverConfiguration.setRequestTimeOut(500);
+    return serverConfiguration;
+  }
+
+  private IncomingHttpMessage readServerResponse(InputStream in) throws IOException {
+    IncomingHttpMessage serverResponse = new IncomingHttpMessage();
+    String[] statusLineAndHeaders = serverResponse.readStartLineAndHeaders(in).split(CRLF, 2);
+
+    serverResponse.setStartLine(statusLineAndHeaders[0]);
+    serverResponse.parseAndSetHeaders(statusLineAndHeaders[1]);
+
+    serverResponse.setBody(serverResponse.readBody(in));
+
+    return serverResponse;
+  }
+
   @Test
   public void testHtmlFileHandlerSuccessFileReturned() throws Exception {
     try (
       Socket clientSocket = new Socket("localhost", 8361);
       PrintWriter out = new PrintWriter(clientSocket.getOutputStream(), true);
-      InputStream in = clientSocket.getInputStream();
+      InputStream in = clientSocket.getInputStream()
     ) {
       out.write("GET /test.html HTTP/1.1\r\nHost: localhost\r\n\r\n");
       out.flush();
@@ -66,7 +81,7 @@ public class ServerTest {
     try (
       Socket clientSocket = new Socket("localhost", 8361);
       PrintWriter out = new PrintWriter(clientSocket.getOutputStream(), true);
-      InputStream in = clientSocket.getInputStream();
+      InputStream in = clientSocket.getInputStream()
     ) {
       out.write("GET /folder/test%20file%201.html HTTP/1.1\r\nHost: localhost\r\n\r\n");
       out.flush();
@@ -84,7 +99,7 @@ public class ServerTest {
     try (
       Socket clientSocket = new Socket("localhost", 8361);
       PrintWriter out = new PrintWriter(clientSocket.getOutputStream(), true);
-      InputStream in = clientSocket.getInputStream();
+      InputStream in = clientSocket.getInputStream()
     ) {
       out.write("GET /foo/bar/test.html HTTP/1.1\r\nHost: localhost\r\n\r\n");
       out.flush();
@@ -98,7 +113,7 @@ public class ServerTest {
     try (
       Socket clientSocket = new Socket("localhost", 8361);
       PrintWriter out = new PrintWriter(clientSocket.getOutputStream(), true);
-      InputStream in = clientSocket.getInputStream();
+      InputStream in = clientSocket.getInputStream()
     ) {
       out.write("foo bar\r\n\r\n");
       out.flush();
@@ -111,22 +126,9 @@ public class ServerTest {
   public void testRespondWithErrorRequestTimeOut() throws Exception {
     try (
       Socket clientSocket = new Socket("localhost", 8361);
-      PrintWriter out = new PrintWriter(clientSocket.getOutputStream(), true);
-      InputStream in = clientSocket.getInputStream();
+      InputStream in = clientSocket.getInputStream()
     ) {
       assertEquals(REQUEST_TIMEOUT.toString(), readServerResponse(in).getStartLine().split(" ", 2)[1]);
     }
-  }
-
-  public IncomingHttpMessage readServerResponse(InputStream in) throws IOException {
-    IncomingHttpMessage serverResponse = new IncomingHttpMessage();
-    String[] statusLineAndHeaders = serverResponse.readStartLineAndHeaders(in).split(CRLF, 2);
-
-    serverResponse.setStartLine(statusLineAndHeaders[0]);
-    serverResponse.parseAndSetHeaders(statusLineAndHeaders[1]);
-
-    serverResponse.setBody(serverResponse.readBody(in));
-
-    return serverResponse;
   }
 }
