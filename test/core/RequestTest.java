@@ -31,7 +31,7 @@ public class RequestTest {
 
   @Test
   public void testConstructorInvalidProtocol_RFC2616_3_1() throws Exception {
-    String requestString = "GET / HTTP1.0\r\n\r\n";
+    String requestString = "GET / HTTP1.0\r\nHost: www.google.com\r\n\r\n";
     InputStream in = new ByteArrayInputStream(requestString.getBytes());
 
     Request request = new Request(in, serverConfiguration);
