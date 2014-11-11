@@ -33,14 +33,10 @@ public class RequestHandler extends Thread {
           request = new Request(in, serverConfiguration);
           Response response = new Response(request);
 
-          if (request.getRequestURI() != null) {
-            for (Map.Entry<Pattern, Handler> entry : handlers.entrySet()) {
-              if (entry.getKey().matcher(request.getRequestURI().getPath()).matches()) {
+          if (request.getRequestURI() != null)
+            for (Map.Entry<Pattern, Handler> entry : handlers.entrySet())
+              if (entry.getKey().matcher(request.getRequestURI().getPath()).matches())
                 entry.getValue().run(response);
-                break;
-              }
-            }
-          }
 
           if (response.getResponseStatusCode() == null)
             response.setErrorBodyAndHeaders(INTERNAL_SERVER_ERROR);
