@@ -11,10 +11,12 @@ import java.util.Map;
 
 import static core.HttpRequestRegEx.*;
 import static core.HttpStatusCode.*;
+import static core.Server.combinePaths;
 
 public class Request extends IncomingHttpMessage {
   private String method;
   private URI requestURI;
+  private String localPath;
   private Map<String, List<String>> queryParameters;
 
   public Request(ServerConfiguration serverConfiguration) {
@@ -85,10 +87,12 @@ public class Request extends IncomingHttpMessage {
     try {
       if (uriString.equals("*")) {
         this.requestURI = null;
+        this.localPath = null;
       } else {
         URI uri = new URI((getHeader("HOST") == null? "" : "http://" + getHeader("HOST")) + uriString);
         setQueryParameters(uri);
         this.requestURI = uri;
+        this.localPath = combinePaths(getServerConfiguration().getDocumentRootPath(), uri.getPath());
       }
     } catch (MalformedURLException | URISyntaxException e) {
       throw new HttpError(BAD_REQUEST);
@@ -146,11 +150,19 @@ public class Request extends IncomingHttpMessage {
     return queryParameters;
   }
 
+  public String getLocalPath() {
+    return localPath;
+  }
+
   public void setRequestURI(URI requestURI) {
     this.requestURI = requestURI;
   }
 
   public void setQueryParameters(Map<String, List<String>> queryParameters) {
     this.queryParameters = queryParameters;
+  }
+
+  public void setLocalPath(String localPath) {
+    this.localPath = localPath;
   }
 }
