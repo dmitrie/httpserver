@@ -19,7 +19,7 @@ public class Server {
   private volatile ServerConfiguration serverConfiguration;
   private volatile boolean serverIsRunning = false;
   private ServerSocket serverSocket;
-  public Map<Pattern, Handler> handlers = new LinkedHashMap<>();
+  public Map<Pattern, Class<? extends Handler>> handlers = new LinkedHashMap<>();
 
   public Server(ServerConfiguration serverConfiguration) throws IOException {
     this.serverConfiguration = serverConfiguration;
@@ -81,24 +81,16 @@ public class Server {
     return serverConfiguration;
   }
 
-  public Map<Pattern, Handler> getHandlers() {
+  public Map<Pattern, Class<? extends Handler>> getHandlers() {
     return handlers;
   }
 
-  public void setHandlers(Map<Pattern, Handler> handlers) {
-    this.handlers = handlers;
+  public void setHandlers(Map<Pattern, Class<? extends Handler>> handler) {
+    this.handlers = handler;
   }
 
-  public void setHandler(String pattern, Class<? extends Handler> handlerClass) {
-    this.handlers.put(Pattern.compile(pattern), createHandler(handlerClass));
-  }
-
-  public Handler createHandler(Class<? extends Handler> handler) {
-    try {
-      return handler.newInstance();
-    } catch (IllegalAccessException | InstantiationException e) {
-      throw new RuntimeException("Cannot create instance of handler " + handler.getName() + "\r\n" + e.getMessage());
-    }
+  public void setHandler(String pattern, Class<? extends Handler> handler) {
+    this.handlers.put(Pattern.compile(pattern), handler);
   }
 
   public void stop() throws IOException {

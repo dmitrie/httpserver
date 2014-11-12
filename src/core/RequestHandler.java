@@ -13,9 +13,9 @@ import static core.Server.respondWithError;
 public class RequestHandler extends Thread {
   private final Socket clientSocket;
   private ServerConfiguration serverConfiguration;
-  private Map<Pattern, Handler> handlers;
+  private Map<Pattern, Class<? extends Handler>> handlers;
 
-  public RequestHandler(Socket clientSocket, ServerConfiguration serverConfiguration, Map<Pattern, Handler> handlers) {
+  public RequestHandler(Socket clientSocket, ServerConfiguration serverConfiguration, Map<Pattern, Class<? extends Handler>> handlers) {
     this.clientSocket = clientSocket;
     this.serverConfiguration = serverConfiguration;
     this.handlers = handlers;
@@ -33,9 +33,11 @@ public class RequestHandler extends Thread {
           Response response = new Response(request);
 
           if (request.getRequestURI() != null)
-            for (Map.Entry<Pattern, Handler> entry : handlers.entrySet())
+            for (Map.Entry<Pattern, Class<? extends Handler>> entry : handlers.entrySet())
               if (entry.getKey().matcher(request.getRequestURI().getPath()).matches())
-                entry.getValue().handle(request, response);
+                entry.getValue()
+                  .getDeclaredConstructor(Request.class, Response.class)
+                  .newInstance(request, response).handle();
 
           if (response.getResponseStatusCode() == null)
             response.setErrorBodyAndHeaders(FORBIDDEN);

@@ -12,10 +12,14 @@ import static core.HttpStatusCode.OK;
 import static core.Server.getServerTime;
 import static core.Server.readFile;
 
-public class FileSystemHandler implements Handler {
+public class FileSystemHandler extends Handler {
+
+  public FileSystemHandler(Request request, Response response) {
+    super(request, response);
+  }
 
   @Override
-  public void handle(Request request, Response response) {
+  public void handle() {
     if (response.getResponseStatusCode() != null)
       return;
 

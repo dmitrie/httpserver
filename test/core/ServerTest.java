@@ -117,18 +117,11 @@ public class ServerTest {
 
   @Test
   public void testMultipleHandlers() throws Exception {
-    Map<Pattern, Handler> originalServerHandlers = server.getHandlers();
+    Map<Pattern, Class<? extends Handler>> originalServerHandlers = server.getHandlers();
     try {
-      server.setHandlers(new LinkedHashMap<Pattern, Handler>(){{
-        put(Pattern.compile(".*"), (request, response) -> {
-          response.setResponseStatusCode(OK);
-          response.setBody("foo");
-        });
-        put(Pattern.compile("/abc/.*"), (request, response) -> {
-          response.setResponseStatusCode(NOT_FOUND);
-          response.setBody(response.getBody() + "bar");
-        });
-      }});
+      server.setHandlers(new LinkedHashMap<>());
+      server.setHandler(".*", HandlerOK.class);
+      server.setHandler("/abc/.*", HandlerNotFound.class);
 
       IncomingHttpMessage responseOneHandler = sendRequest("GET /test.html HTTP/1.1\r\nHost: www.google.com\r\n\r\n");
       assertEquals("HTTP/1.1 " + OK, responseOneHandler.getStartLine());
@@ -139,6 +132,30 @@ public class ServerTest {
       assertEquals("foobar", responseTwoHandlers.getBody());
     } finally {
       server.setHandlers(originalServerHandlers);
+    }
+  }
+
+  public static class HandlerOK extends Handler {
+    public HandlerOK(Request request, Response response) {
+      super(request, response);
+    }
+
+    @Override
+    public void handle() {
+      response.setResponseStatusCode(OK);
+      response.setBody("foo");
+    }
+  }
+
+  public static class HandlerNotFound extends Handler {
+    public HandlerNotFound(Request request, Response response) {
+      super(request, response);
+    }
+
+    @Override
+    public void handle() {
+      response.setResponseStatusCode(NOT_FOUND);
+      response.setBody(response.getBody() + "bar");
     }
   }
 }
