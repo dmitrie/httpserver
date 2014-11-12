@@ -1,5 +1,7 @@
 package core;
 
+import handlers.StandardHandlers;
+
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -27,6 +29,12 @@ public class Server {
   public Server() throws IOException {
     this.serverConfiguration = new ServerConfiguration();
     this.serverSocket = new ServerSocket(serverConfiguration.getPortNumber());
+  }
+
+  public static void main(String[] args) throws IOException {
+    Server server = new Server();
+    server.setHandler(".*", StandardHandlers::htmlFileHandler);
+    server.start();
   }
 
   public void start() {

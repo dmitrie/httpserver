@@ -1,4 +1,6 @@
-package core;
+package handlers;
+
+import core.Response;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -7,12 +9,7 @@ import static core.HttpStatusCode.NOT_FOUND;
 import static core.HttpStatusCode.OK;
 import static core.Server.*;
 
-public class StartServer {
-  public static void main(String[] args) throws IOException {
-    Server server = new Server();
-    server.setHandler(".*", StartServer::htmlFileHandler);
-    server.start();
-  }
+public class StandardHandlers {
 
   public static void htmlFileHandler(Response response) {
     if (response.getResponseStatusCode() != null)

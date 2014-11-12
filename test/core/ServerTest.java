@@ -1,5 +1,6 @@
 package core;
 
+import handlers.StandardHandlers;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -26,7 +27,7 @@ public class ServerTest {
     do {
       try {
         server = new Server(getConfiguration());
-        server.setHandler(".*", StartServer::htmlFileHandler);
+        server.setHandler(".*", StandardHandlers::htmlFileHandler);
         serverThread = new Thread(server::start);
         serverThread.start();
         return;
