@@ -34,6 +34,8 @@ public class Response extends HttpMessage {
   @Override
   public String generateMessage() {
     setStartLine(getProtocol() + " " + getResponseStatusCode());
+    if ("HEAD".equals(getRequest().getMethod()))
+      setBody(null);
 
     if (getBody() != null)
       setHeader("Content-Length", getContentLength());

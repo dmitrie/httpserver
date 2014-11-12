@@ -6,9 +6,9 @@ import org.springframework.util.LinkedCaseInsensitiveMap;
 
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
 
 import static core.HttpStatusCode.*;
-import static java.nio.charset.Charset.forName;
 import static org.junit.Assert.assertEquals;
 
 public class ResponseTest {
@@ -44,16 +44,16 @@ public class ResponseTest {
   public void testGetContentLengthUsesCurrentEncoding() throws Exception {
     Response response = new Response(new Request(serverConfiguration));
     response.setBody("test\n");
-    response.setBodyEncoding(forName("UTF-8"));
+    response.setBodyEncoding(StandardCharsets.UTF_8);
     assertEquals("5", response.getContentLength());
-    response.setBodyEncoding(forName("UTF-16"));
+    response.setBodyEncoding(StandardCharsets.UTF_16);
     assertEquals("12", response.getContentLength());
   }
 
   @Test
   public void testGenerateMessage_RFC2616_6() throws Exception {
     Response response = new Response(new Request(serverConfiguration));
-    response.setBodyEncoding(forName("UTF-8"));
+    response.setBodyEncoding(StandardCharsets.UTF_8);
     response.setBody("test\r\ntest\t");
     response.setHeader("Content-Type", "text/html; charset=UTF-8");
     response.setResponseStatusCode(OK);
@@ -77,8 +77,8 @@ public class ResponseTest {
 
   @Test
   public void testGenerateMessageNoHeaders_RFC2616_6() throws Exception {
-    Response response = new Response(new Request(new ByteArrayInputStream("HEAD http://google.com HTTP/1.1".getBytes()), serverConfiguration));
-    response.setBodyEncoding(forName("UTF-8"));
+    Response response = new Response(new Request(new ByteArrayInputStream("POST http://google.com HTTP/1.1".getBytes()), serverConfiguration));
+    response.setBodyEncoding(StandardCharsets.UTF_8);
     response.setBody("test\r\ntest\t");
     response.setResponseStatusCode(OK);
     assertEquals("HTTP/1.1 200 OK\r\nContent-Length: 11\r\n\r\ntest\r\ntest\t", response.generateMessage());
@@ -107,11 +107,22 @@ public class ResponseTest {
   @Test
   public void testSetHeaderOverwritesContentLength() throws Exception {
     Response response = new Response(new Request(serverConfiguration));
-    response.setBodyEncoding(forName("UTF-8"));
+    response.setBodyEncoding(StandardCharsets.UTF_8);
     response.setBody("test\r\ntest\t");
     response.setHeader("Content-Type", "text/html; charset=UTF-8");
     response.setHeader("Content-Length", "1");
     response.setResponseStatusCode(OK);
     assertEquals("HTTP/1.1 200 OK\r\nContent-Type: text/html; charset=UTF-8\r\nContent-Length: 11\r\n\r\ntest\r\ntest\t", response.generateMessage());
+  }
+
+  @Test
+  public void testGenerateMessageRemovesBodyFromResponseToHead_RFC2616_14_13() throws Exception {
+    Response response = new Response(new Request(serverConfiguration));
+    response.getRequest().setMethod("HEAD");
+    response.setResponseStatusCode(OK);
+    response.setBody("test");
+    response.setHeader("Content-Length", "4");
+    response.setHeader("Content-Type", "text/html; charset=UTF-8");
+    assertEquals("HTTP/1.1 200 OK\r\nContent-Length: 4\r\nContent-Type: text/html; charset=UTF-8\r\n\r\n", response.generateMessage());
   }
 }
