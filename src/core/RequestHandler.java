@@ -7,8 +7,7 @@ import java.net.SocketTimeoutException;
 import java.util.Map;
 import java.util.regex.Pattern;
 
-import static core.HttpStatusCode.INTERNAL_SERVER_ERROR;
-import static core.HttpStatusCode.REQUEST_TIMEOUT;
+import static core.HttpStatusCode.*;
 import static core.Server.respondWithError;
 
 public class RequestHandler extends Thread {
@@ -39,7 +38,7 @@ public class RequestHandler extends Thread {
                 entry.getValue().run(response);
 
           if (response.getResponseStatusCode() == null)
-            response.setErrorBodyAndHeaders(INTERNAL_SERVER_ERROR);
+            response.setErrorBodyAndHeaders(FORBIDDEN);
 
           out.write(response.generateMessage());
           out.flush();

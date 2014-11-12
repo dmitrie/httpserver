@@ -4,6 +4,7 @@ public enum HttpStatusCode {
 
     OK (200, "OK"),
     BAD_REQUEST (400, "Bad Request"),
+    FORBIDDEN (403, "Forbidden"),
     NOT_FOUND (404, "Not Found"),
     REQUEST_TIMEOUT (408, "Request Timeout"),
     REQUEST_URI_TOO_LONG (414, "Request-URI Too Long"),
