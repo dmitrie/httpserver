@@ -16,9 +16,9 @@ import java.util.Map;
 import java.util.regex.Pattern;
 
 public class Server {
-  private ServerConfiguration serverConfiguration;
+  private volatile ServerConfiguration serverConfiguration;
+  private volatile boolean serverIsRunning = false;
   private ServerSocket serverSocket;
-  private boolean serverIsRunning = false;
   public Map<Pattern, Handler> handlers = new LinkedHashMap<>();
 
   public Server(ServerConfiguration serverConfiguration) throws IOException {
