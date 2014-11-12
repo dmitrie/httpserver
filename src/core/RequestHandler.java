@@ -35,7 +35,7 @@ public class RequestHandler extends Thread {
           if (request.getRequestURI() != null)
             for (Map.Entry<Pattern, Handler> entry : handlers.entrySet())
               if (entry.getKey().matcher(request.getRequestURI().getPath()).matches())
-                entry.getValue().run(response);
+                entry.getValue().handle(request, response);
 
           if (response.getResponseStatusCode() == null)
             response.setErrorBodyAndHeaders(FORBIDDEN);

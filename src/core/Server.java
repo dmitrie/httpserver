@@ -1,6 +1,6 @@
 package core;
 
-import handlers.StandardHandlers;
+import handlers.FileSystemHandler;
 
 import java.io.File;
 import java.io.IOException;
@@ -33,7 +33,7 @@ public class Server {
 
   public static void main(String[] args) throws IOException {
     Server server = new Server();
-    server.setHandler(".*", StandardHandlers::htmlFileHandler);
+    server.setHandler(".*", FileSystemHandler.class);
     server.start();
   }
 
@@ -89,8 +89,16 @@ public class Server {
     this.handlers = handlers;
   }
 
-  public void setHandler(String pattern, Handler handler) {
-    this.handlers.put(Pattern.compile(pattern), handler);
+  public void setHandler(String pattern, Class<? extends Handler> handlerClass) {
+    this.handlers.put(Pattern.compile(pattern), createHandler(handlerClass));
+  }
+
+  public Handler createHandler(Class<? extends Handler> handler) {
+    try {
+      return handler.newInstance();
+    } catch (IllegalAccessException | InstantiationException e) {
+      throw new RuntimeException("Cannot create instance of handler " + handler.getName() + "\r\n" + e.getMessage());
+    }
   }
 
   public void stop() throws IOException {

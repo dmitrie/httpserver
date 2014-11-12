@@ -1,6 +1,5 @@
 package core;
 
-@FunctionalInterface
 public interface Handler {
-  void run(Response response);
+  void handle(Request request, Response response);
 }

@@ -1,6 +1,6 @@
 package core;
 
-import handlers.StandardHandlers;
+import handlers.FileSystemHandler;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -27,7 +27,7 @@ public class ServerTest {
     do {
       try {
         server = new Server(getConfiguration());
-        server.setHandler(".*", StandardHandlers::htmlFileHandler);
+        server.setHandler(".*", FileSystemHandler.class);
         serverThread = new Thread(server::start);
         serverThread.start();
         return;
@@ -120,11 +120,11 @@ public class ServerTest {
     Map<Pattern, Handler> originalServerHandlers = server.getHandlers();
     try {
       server.setHandlers(new LinkedHashMap<Pattern, Handler>(){{
-        put(Pattern.compile(".*"), (response) -> {
+        put(Pattern.compile(".*"), (request, response) -> {
           response.setResponseStatusCode(OK);
           response.setBody("foo");
         });
-        put(Pattern.compile("/abc/.*"), (response) -> {
+        put(Pattern.compile("/abc/.*"), (request, response) -> {
           response.setResponseStatusCode(NOT_FOUND);
           response.setBody(response.getBody() + "bar");
         });
