@@ -8,6 +8,9 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintWriter;
 import java.net.Socket;
+import java.util.LinkedHashMap;
+import java.util.Map;
+import java.util.regex.Pattern;
 
 import static core.HttpRequestRegEx.CRLF;
 import static core.HttpStatusCode.*;
@@ -54,8 +57,10 @@ public class ServerTest {
       PrintWriter out = new PrintWriter(clientSocket.getOutputStream(), true);
       InputStream in = clientSocket.getInputStream()
     ) {
-      out.write(request);
-      out.flush();
+      if (request != null) {
+        out.write(request);
+        out.flush();
+      }
 
       serverResponse = readServerResponse(in);
     }
@@ -106,11 +111,33 @@ public class ServerTest {
 
   @Test
   public void testRespondWithErrorRequestTimeOut() throws Exception {
-    try (
-      Socket clientSocket = new Socket("localhost", 8361);
-      InputStream in = clientSocket.getInputStream()
-    ) {
-      assertEquals(REQUEST_TIMEOUT.toString(), readServerResponse(in).getStartLine().split(" ", 2)[1]);
+    assertEquals("HTTP/1.1 " + REQUEST_TIMEOUT, sendRequest(null).getStartLine());
+  }
+
+  @Test
+  public void testMultipleHandlers() throws Exception {
+    Map<Pattern, Handler> originalServerHandlers = server.getHandlers();
+    try {
+      server.setHandlers(new LinkedHashMap<Pattern, Handler>(){{
+        put(Pattern.compile(".*"), (response) -> {
+          response.setResponseStatusCode(OK);
+          response.setBody("foo");
+        });
+        put(Pattern.compile("/abc/.*"), (response) -> {
+          response.setResponseStatusCode(NOT_FOUND);
+          response.setBody(response.getBody() + "bar");
+        });
+      }});
+
+      IncomingHttpMessage responseOneHandler = sendRequest("GET /test.html HTTP/1.1\r\nHost: www.google.com\r\n\r\n");
+      assertEquals("HTTP/1.1 " + OK, responseOneHandler.getStartLine());
+      assertEquals("foo", responseOneHandler.getBody());
+
+      IncomingHttpMessage responseTwoHandlers = sendRequest("GET /abc/test.html HTTP/1.1\r\nHost: www.google.com\r\n\r\n");
+      assertEquals("HTTP/1.1 " + NOT_FOUND, responseTwoHandlers.getStartLine());
+      assertEquals("foobar", responseTwoHandlers.getBody());
+    } finally {
+      server.setHandlers(originalServerHandlers);
     }
   }
 }
