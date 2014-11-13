@@ -3,6 +3,7 @@ package handlers;
 import core.Handler;
 import core.Request;
 import core.Response;
+import core.ServerConfiguration;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -14,12 +15,12 @@ import static core.Server.readFile;
 
 public class FileSystemHandler extends Handler {
 
-  public FileSystemHandler(Request request, Response response) {
-    super(request, response);
+  public FileSystemHandler(ServerConfiguration serverConfiguration) {
+    super(serverConfiguration);
   }
 
   @Override
-  public void handle() {
+  public void handle(Request request, Response response) {
     if (response.getResponseStatusCode() != null)
       return;
 

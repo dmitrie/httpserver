@@ -22,7 +22,7 @@ public class Server {
   private volatile ServerConfiguration serverConfiguration;
   private volatile boolean serverIsRunning = false;
   private ServerSocket serverSocket;
-  public Map<Pattern, Class<? extends Handler>> handlers = new LinkedHashMap<>();
+  public Map<Pattern, Handler> handlers = new LinkedHashMap<>();
 
   public Server(ServerConfiguration serverConfiguration) throws IOException {
     this.serverConfiguration = serverConfiguration;
@@ -36,7 +36,7 @@ public class Server {
 
   public static void main(String[] args) throws IOException {
     Server server = new Server();
-    server.setHandler(".*", FileSystemHandler.class);
+    server.setHandler(".*", new FileSystemHandler(server.getServerConfiguration()));
     server.start();
   }
 
@@ -95,15 +95,15 @@ public class Server {
     return serverConfiguration;
   }
 
-  public Map<Pattern, Class<? extends Handler>> getHandlers() {
+  public Map<Pattern, Handler> getHandlers() {
     return handlers;
   }
 
-  public void setHandlers(Map<Pattern, Class<? extends Handler>> handler) {
+  public void setHandlers(Map<Pattern, Handler> handler) {
     this.handlers = handler;
   }
 
-  public void setHandler(String pattern, Class<? extends Handler> handler) {
+  public void setHandler(String pattern, Handler handler) {
     this.handlers.put(Pattern.compile(pattern), handler);
   }
 

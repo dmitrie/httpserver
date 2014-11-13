@@ -27,7 +27,7 @@ public class ServerTest {
     do {
       try {
         server = new Server(getConfiguration());
-        server.setHandler(".*", FileSystemHandler.class);
+        server.setHandler(".*", new FileSystemHandler(getConfiguration()));
         serverThread = new Thread(server::start);
         serverThread.start();
         return;
@@ -117,11 +117,11 @@ public class ServerTest {
 
   @Test
   public void testMultipleHandlers() throws Exception {
-    Map<Pattern, Class<? extends Handler>> originalServerHandlers = server.getHandlers();
+    Map<Pattern, Handler> originalServerHandlers = server.getHandlers();
     try {
       server.setHandlers(new LinkedHashMap<>());
-      server.setHandler(".*", HandlerOK.class);
-      server.setHandler("/abc/.*", HandlerNotFound.class);
+      server.setHandler(".*", new HandlerOK(getConfiguration()));
+      server.setHandler("/abc/.*", new HandlerNotFound(getConfiguration()));
 
       IncomingHttpMessage responseOneHandler = sendRequest("GET /test.html HTTP/1.1\r\nHost: www.google.com\r\n\r\n");
       assertEquals("HTTP/1.1 " + OK, responseOneHandler.getStartLine());
@@ -136,24 +136,24 @@ public class ServerTest {
   }
 
   public static class HandlerOK extends Handler {
-    public HandlerOK(Request request, Response response) {
-      super(request, response);
+    public HandlerOK(ServerConfiguration serverConfiguration) {
+      super(serverConfiguration);
     }
 
     @Override
-    public void handle() {
+    public void handle(Request request, Response response) {
       response.setResponseStatusCode(OK);
       response.setBody("foo");
     }
   }
 
   public static class HandlerNotFound extends Handler {
-    public HandlerNotFound(Request request, Response response) {
-      super(request, response);
+    public HandlerNotFound(ServerConfiguration serverConfiguration) {
+      super(serverConfiguration);
     }
 
     @Override
-    public void handle() {
+    public void handle(Request request, Response response) {
       response.setResponseStatusCode(NOT_FOUND);
       response.setBody(response.getBody() + "bar");
     }

@@ -1,13 +1,11 @@
 package core;
 
 public abstract class Handler {
-  protected Request request;
-  protected Response response;
+  protected ServerConfiguration serverConfiguration;
 
-  protected Handler(Request request, Response response) {
-    this.request = request;
-    this.response = response;
+  protected Handler(ServerConfiguration serverConfiguration) {
+    this.serverConfiguration = serverConfiguration;
   }
 
-  protected abstract void handle();
+  protected abstract void handle(Request request, Response response);
 }

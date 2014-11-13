@@ -14,9 +14,9 @@ import static core.Server.respondWithError;
 public class RequestProcessor implements Runnable {
   private final Socket clientSocket;
   private ServerConfiguration serverConfiguration;
-  private Map<Pattern, Class<? extends Handler>> handlers;
+  private Map<Pattern, Handler> handlers;
 
-  public RequestProcessor(Socket clientSocket, ServerConfiguration serverConfiguration, Map<Pattern, Class<? extends Handler>> handlers) {
+  public RequestProcessor(Socket clientSocket, ServerConfiguration serverConfiguration, Map<Pattern, Handler> handlers) {
     this.clientSocket = clientSocket;
     this.serverConfiguration = serverConfiguration;
     this.handlers = handlers;
@@ -57,11 +57,9 @@ public class RequestProcessor implements Runnable {
 
   private void executeHandlers(Request request, Response response) throws InstantiationException, IllegalAccessException, java.lang.reflect.InvocationTargetException, NoSuchMethodException {
     if (request.getRequestURI() != null)
-      for (Map.Entry<Pattern, Class<? extends Handler>> entry : handlers.entrySet())
+      for (Map.Entry<Pattern, Handler> entry : handlers.entrySet())
         if (entry.getKey().matcher(request.getRequestURI().getPath()).matches())
-          entry.getValue()
-            .getDeclaredConstructor(Request.class, Response.class)
-            .newInstance(request, response).handle();
+          entry.getValue().handle(request, response);
 
     if (response.getResponseStatusCode() == null)
       response.setErrorBodyAndHeaders(FORBIDDEN);
