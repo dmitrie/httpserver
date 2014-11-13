@@ -13,6 +13,9 @@ import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 import java.util.regex.Pattern;
 
 public class Server {
@@ -39,13 +42,24 @@ public class Server {
 
   public void start() {
     serverIsRunning = true;
+    ExecutorService executor = Executors.newFixedThreadPool(serverConfiguration.getNumberOfThreads());
+
     while(serverIsRunning) {
       try {
-        new RequestHandler(serverSocket.accept(), serverConfiguration, handlers).start();
+        Runnable worker = new RequestHandler(serverSocket.accept(), serverConfiguration, handlers);
+        executor.execute(worker);
       } catch (Exception e) {
         System.out.println("Exception caught when listening for a connection");
         System.out.println(e.getMessage());
       }
+    }
+
+    executor.shutdown();
+    try {
+      executor.awaitTermination(10, TimeUnit.SECONDS);
+    } catch (InterruptedException e) {
+      System.out.println("Couldn't stop all threads");
+      System.out.println(e.getMessage());
     }
   }
 

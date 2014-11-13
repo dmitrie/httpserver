@@ -10,7 +10,7 @@ import java.util.regex.Pattern;
 import static core.HttpStatusCode.*;
 import static core.Server.respondWithError;
 
-public class RequestHandler extends Thread {
+public class RequestHandler implements Runnable {
   private final Socket clientSocket;
   private ServerConfiguration serverConfiguration;
   private Map<Pattern, Class<? extends Handler>> handlers;

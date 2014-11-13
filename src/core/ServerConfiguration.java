@@ -17,6 +17,7 @@ public class ServerConfiguration {
   }};
   private boolean absoluteUriIsAllowed = false;
   private Charset defaultCharset = StandardCharsets.UTF_8;
+  private int numberOfThreads = 10;
 
   public int getMaximumURILength() {
     return maximumURILength;
@@ -46,6 +47,10 @@ public class ServerConfiguration {
     return defaultCharset;
   }
 
+  public int getNumberOfThreads() {
+    return numberOfThreads;
+  }
+
   public void setMaximumURILength(int maximumURILength) {
     this.maximumURILength = maximumURILength;
   }
@@ -72,5 +77,9 @@ public class ServerConfiguration {
 
   public void setDefaultCharset(Charset defaultCharset) {
     this.defaultCharset = defaultCharset;
+  }
+
+  public void setNumberOfThreads(int numberOfThreads) {
+    this.numberOfThreads = numberOfThreads;
   }
 }
