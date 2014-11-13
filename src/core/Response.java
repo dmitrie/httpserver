@@ -5,6 +5,7 @@ public class Response extends HttpMessage {
 
   public Response(Request request) {
     setRequest(request);
+    setBodyEncoding(request.getDefaultCharset());
     setProtocol(request.getProtocol() == null ? "HTTP/1.1" : request.getProtocol());
     if (request.getResponseStatusCode() != null)
       setErrorBodyAndHeaders(request.getResponseStatusCode());

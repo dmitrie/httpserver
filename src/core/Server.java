@@ -2,13 +2,9 @@ package core;
 
 import handlers.FileSystemHandler;
 
-import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.net.ServerSocket;
-import java.nio.charset.Charset;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.LinkedHashMap;
@@ -74,17 +70,6 @@ public class Server {
     Calendar calendar = Calendar.getInstance();
     SimpleDateFormat dateFormat = new SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss zzz");
     return dateFormat.format(calendar.getTime());
-  }
-
-  public static String readFile(String path, Charset encoding) throws IOException {
-    byte[] encoded = Files.readAllBytes(Paths.get(path));
-    return new String(encoded, encoding);
-  }
-
-  public static String combinePaths(String path1, String path2) {
-    File file1 = new File(path1);
-    File file2 = new File(file1, path2);
-    return file2.getPath();
   }
 
   public boolean isServerIsRunning() {

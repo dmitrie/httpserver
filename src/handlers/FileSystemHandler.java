@@ -4,12 +4,15 @@ import core.Handler;
 import core.Request;
 import core.Response;
 
+import java.io.File;
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
+import java.nio.charset.Charset;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 
 import static core.HttpStatusCode.NOT_FOUND;
 import static core.HttpStatusCode.OK;
-import static core.Server.*;
+import static core.Server.getServerTime;
 
 public class FileSystemHandler extends Handler {
 
@@ -29,7 +32,7 @@ public class FileSystemHandler extends Handler {
     switch (request.getMethod()) {
       case "GET": case "HEAD":
         try {
-          response.setBody(readFile(localPath, StandardCharsets.UTF_8));
+          response.setBody(readFile(localPath, response.getBodyEncoding()));
           response.setResponseStatusCode(OK);
         } catch (IOException e) {
           response.setErrorBodyAndHeaders(NOT_FOUND);
@@ -41,6 +44,17 @@ public class FileSystemHandler extends Handler {
       default:
         break;
     }
+  }
+
+  public static String readFile(String path, Charset encoding) throws IOException {
+    byte[] encoded = Files.readAllBytes(Paths.get(path));
+    return new String(encoded, encoding);
+  }
+
+  public static String combinePaths(String path1, String path2) {
+    File file1 = new File(path1);
+    File file2 = new File(file1, path2);
+    return file2.getPath();
   }
 
   public String getDocumentRootPath() {
