@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 import java.net.*;
+import java.nio.charset.StandardCharsets;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -105,10 +106,10 @@ public class Request extends IncomingHttpMessage {
       for (String parameter : parameters) {
         String[] splitParameter = parameter.split("=", 2);
 
-        String key = URLDecoder.decode(splitParameter[0], serverConfiguration.getDefaultCharset().name());
+        String key = URLDecoder.decode(splitParameter[0], StandardCharsets.UTF_8.name());
         List<String> value = queryParameters.getOrDefault(key, new LinkedList<>());
         if (splitParameter.length == 2)
-          value.add(URLDecoder.decode(splitParameter[1], serverConfiguration.getDefaultCharset().name()));
+          value.add(URLDecoder.decode(splitParameter[1], StandardCharsets.UTF_8.name()));
         else
           value.add(null);
 
