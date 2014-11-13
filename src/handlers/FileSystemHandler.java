@@ -10,8 +10,7 @@ import java.nio.charset.StandardCharsets;
 
 import static core.HttpStatusCode.NOT_FOUND;
 import static core.HttpStatusCode.OK;
-import static core.Server.getServerTime;
-import static core.Server.readFile;
+import static core.Server.*;
 
 public class FileSystemHandler extends Handler {
 
@@ -24,11 +23,12 @@ public class FileSystemHandler extends Handler {
     if (response.getResponseStatusCode() != null)
       return;
 
+    String localPath = combinePaths(serverConfiguration.getDocumentRootPath(), request.getRequestURI().getPath());
+
     switch (request.getMethod()) {
       case "GET": case "HEAD":
         try {
-          response.setBody(readFile(
-            request.getLocalPath(), StandardCharsets.UTF_8));
+          response.setBody(readFile(localPath, StandardCharsets.UTF_8));
           response.setResponseStatusCode(OK);
         } catch (IOException e) {
           response.setErrorBodyAndHeaders(NOT_FOUND);
