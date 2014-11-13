@@ -5,7 +5,7 @@ public class Response extends HttpMessage {
 
   public Response(Request request) {
     setRequest(request);
-    setBodyEncoding(request.getDefaultCharset());
+    setBodyCharset(request.getDefaultCharset());
     setProtocol(request.getProtocol() == null ? "HTTP/1.1" : request.getProtocol());
     if (request.getResponseStatusCode() != null)
       setErrorBodyAndHeaders(request.getResponseStatusCode());
@@ -28,7 +28,7 @@ public class Response extends HttpMessage {
         break;
     }
 
-    setHeader("Content-Type", "text/html; charset=" + getBodyEncoding());
+    setHeader("Content-Type", "text/html; charset=" + getBodyCharset());
     setHeader("Last-modified", Server.getServerTime());
   }
 

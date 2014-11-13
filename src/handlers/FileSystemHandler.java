@@ -32,13 +32,13 @@ public class FileSystemHandler extends Handler {
     switch (request.getMethod()) {
       case "GET": case "HEAD":
         try {
-          response.setBody(readFile(localPath, response.getBodyEncoding()));
+          response.setBody(readFile(localPath, response.getBodyCharset()));
           response.setResponseStatusCode(OK);
         } catch (IOException e) {
           response.setErrorBodyAndHeaders(NOT_FOUND);
           return;
         }
-        response.setHeader("Content-Type", "text/html; charset=" + response.getBodyEncoding());
+        response.setHeader("Content-Type", "text/html; charset=" + response.getBodyCharset());
         response.setHeader("Last-modified", getServerTime());
         break;
       default:
@@ -46,9 +46,9 @@ public class FileSystemHandler extends Handler {
     }
   }
 
-  public static String readFile(String path, Charset encoding) throws IOException {
+  public static String readFile(String path, Charset charset) throws IOException {
     byte[] encoded = Files.readAllBytes(Paths.get(path));
-    return new String(encoded, encoding);
+    return new String(encoded, charset);
   }
 
   public static String combinePaths(String path1, String path2) {

@@ -41,19 +41,19 @@ public class ResponseTest {
   }
 
   @Test
-  public void testGetContentLengthUsesCurrentEncoding() throws Exception {
+  public void testGetContentLengthUsesCurrentCharset() throws Exception {
     Response response = new Response(new Request(serverConfiguration));
     response.setBody("test\n");
-    response.setBodyEncoding(StandardCharsets.UTF_8);
+    response.setBodyCharset(StandardCharsets.UTF_8);
     assertEquals("5", response.getContentLength());
-    response.setBodyEncoding(StandardCharsets.UTF_16);
+    response.setBodyCharset(StandardCharsets.UTF_16);
     assertEquals("12", response.getContentLength());
   }
 
   @Test
   public void testGenerateMessage_RFC2616_6() throws Exception {
     Response response = new Response(new Request(serverConfiguration));
-    response.setBodyEncoding(StandardCharsets.UTF_8);
+    response.setBodyCharset(StandardCharsets.UTF_8);
     response.setBody("test\r\ntest\t");
     response.setHeader("Content-Type", "text/html; charset=UTF-8");
     response.setResponseStatusCode(OK);
@@ -78,7 +78,7 @@ public class ResponseTest {
   @Test
   public void testGenerateMessageNoHeaders_RFC2616_6() throws Exception {
     Response response = new Response(new Request(new ByteArrayInputStream("POST http://google.com HTTP/1.1".getBytes()), serverConfiguration));
-    response.setBodyEncoding(StandardCharsets.UTF_8);
+    response.setBodyCharset(StandardCharsets.UTF_8);
     response.setBody("test\r\ntest\t");
     response.setResponseStatusCode(OK);
     assertEquals("HTTP/1.1 200 OK\r\nContent-Length: 11\r\n\r\ntest\r\ntest\t", response.generateMessage());
@@ -107,7 +107,7 @@ public class ResponseTest {
   @Test
   public void testSetHeaderOverwritesContentLength() throws Exception {
     Response response = new Response(new Request(serverConfiguration));
-    response.setBodyEncoding(StandardCharsets.UTF_8);
+    response.setBodyCharset(StandardCharsets.UTF_8);
     response.setBody("test\r\ntest\t");
     response.setHeader("Content-Type", "text/html; charset=UTF-8");
     response.setHeader("Content-Length", "1");

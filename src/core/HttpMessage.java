@@ -14,7 +14,7 @@ public class HttpMessage {
   protected String startLine;
   protected Map<String, String> headers = new LinkedCaseInsensitiveMap();
   protected String body;
-  protected Charset bodyEncoding = StandardCharsets.ISO_8859_1;
+  protected Charset bodyCharset = StandardCharsets.UTF_8;
   protected HttpStatusCode responseStatusCode;
   protected ServerConfiguration serverConfiguration;
 
@@ -37,7 +37,7 @@ public class HttpMessage {
   }
 
   public String getContentLength() {
-    return "" + getBody().getBytes(getBodyEncoding()).length;
+    return "" + getBody().getBytes(getBodyCharset()).length;
   }
 
   public String getProtocol() {
@@ -56,8 +56,8 @@ public class HttpMessage {
     return body;
   }
 
-  public Charset getBodyEncoding() {
-    return bodyEncoding;
+  public Charset getBodyCharset() {
+    return bodyCharset;
   }
 
   public HttpStatusCode getResponseStatusCode() {
@@ -80,8 +80,8 @@ public class HttpMessage {
     this.body = body;
   }
 
-  public void setBodyEncoding(Charset bodyEncoding) {
-    this.bodyEncoding = bodyEncoding;
+  public void setBodyCharset(Charset bodyCharset) {
+    this.bodyCharset = bodyCharset;
   }
 
   public void setResponseStatusCode(HttpStatusCode responseStatusCode) {
