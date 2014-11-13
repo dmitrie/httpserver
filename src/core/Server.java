@@ -36,7 +36,7 @@ public class Server {
 
   public static void main(String[] args) throws IOException {
     Server server = new Server();
-    server.setHandler(".*", new FileSystemHandler());
+    server.setHandler(".*", new FileSystemHandler("/home/kool/IdeaProjects/httpserver/test/web/"));
     server.start();
   }
 

@@ -13,7 +13,11 @@ import static core.Server.*;
 
 public class FileSystemHandler extends Handler {
 
-  private String documentRootPath = "/home/kool/IdeaProjects/httpserver/test/web/";
+  private String documentRootPath;
+
+  public FileSystemHandler(String documentRootPath) {
+    this.documentRootPath = documentRootPath;
+  }
 
   @Override
   public void handle(Request request, Response response) {

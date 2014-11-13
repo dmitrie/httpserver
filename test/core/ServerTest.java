@@ -27,9 +27,7 @@ public class ServerTest {
     do {
       try {
         server = new Server(getConfiguration());
-        FileSystemHandler fileSystemHandler = new FileSystemHandler();
-        fileSystemHandler.setDocumentRootPath("/home/kool/IdeaProjects/httpserver/test/web/");
-        server.setHandler(".*", fileSystemHandler);
+        server.setHandler(".*", new FileSystemHandler("/home/kool/IdeaProjects/httpserver/test/web/"));
         serverThread = new Thread(server::start);
         serverThread.start();
         return;
