@@ -46,7 +46,7 @@ public class Server {
 
     while(serverIsRunning) {
       try {
-        Runnable worker = new RequestHandler(serverSocket.accept(), serverConfiguration, handlers);
+        Runnable worker = new RequestProcessor(serverSocket.accept(), serverConfiguration, handlers);
         executor.execute(worker);
       } catch (Exception e) {
         System.out.println("Exception caught when listening for a connection");
