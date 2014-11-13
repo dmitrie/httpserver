@@ -24,7 +24,7 @@ public class FileSystemHandler extends Handler {
       return;
 
     switch (request.getMethod()) {
-      case "GET":
+      case "GET": case "HEAD":
         try {
           response.setBody(readFile(
             request.getLocalPath(), StandardCharsets.UTF_8));
