@@ -127,7 +127,7 @@ public class Request extends IncomingHttpMessage {
     if (uri.length() > serverConfiguration.getMaximumURILength())
       throw new HttpError(REQUEST_URI_TOO_LONG);
 
-    if (uri.indexOf("http")==0 && !getServerConfiguration().isAbsoluteUriIsAllowed())
+    if (uri.indexOf("http")==0 && !serverConfiguration.isAbsoluteUriIsAllowed())
       throw new HttpError(BAD_REQUEST);
 
     if(uri.equals("*") && !getMethod().equals("OPTIONS"))

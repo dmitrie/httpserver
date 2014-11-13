@@ -27,7 +27,9 @@ public class ServerTest {
     do {
       try {
         server = new Server(getConfiguration());
-        server.setHandler(".*", new FileSystemHandler(getConfiguration()));
+        FileSystemHandler fileSystemHandler = new FileSystemHandler();
+        fileSystemHandler.setDocumentRootPath("/home/kool/IdeaProjects/httpserver/test/web/");
+        server.setHandler(".*", fileSystemHandler);
         serverThread = new Thread(server::start);
         serverThread.start();
         return;
@@ -46,7 +48,6 @@ public class ServerTest {
   private ServerConfiguration getConfiguration() {
     ServerConfiguration serverConfiguration = new ServerConfiguration();
     serverConfiguration.setPortNumber(8361);
-    serverConfiguration.setDocumentRootPath("/home/kool/IdeaProjects/httpserver/test/web/");
     serverConfiguration.setRequestTimeOut(500);
     return serverConfiguration;
   }
@@ -120,8 +121,8 @@ public class ServerTest {
     Map<Pattern, Handler> originalServerHandlers = server.getHandlers();
     try {
       server.setHandlers(new LinkedHashMap<>());
-      server.setHandler(".*", new HandlerOK(getConfiguration()));
-      server.setHandler("/abc/.*", new HandlerNotFound(getConfiguration()));
+      server.setHandler(".*", new HandlerOK());
+      server.setHandler("/abc/.*", new HandlerNotFound());
 
       IncomingHttpMessage responseOneHandler = sendRequest("GET /test.html HTTP/1.1\r\nHost: www.google.com\r\n\r\n");
       assertEquals("HTTP/1.1 " + OK, responseOneHandler.getStartLine());
@@ -136,10 +137,6 @@ public class ServerTest {
   }
 
   public static class HandlerOK extends Handler {
-    public HandlerOK(ServerConfiguration serverConfiguration) {
-      super(serverConfiguration);
-    }
-
     @Override
     public void handle(Request request, Response response) {
       response.setResponseStatusCode(OK);
@@ -148,10 +145,6 @@ public class ServerTest {
   }
 
   public static class HandlerNotFound extends Handler {
-    public HandlerNotFound(ServerConfiguration serverConfiguration) {
-      super(serverConfiguration);
-    }
-
     @Override
     public void handle(Request request, Response response) {
       response.setResponseStatusCode(NOT_FOUND);

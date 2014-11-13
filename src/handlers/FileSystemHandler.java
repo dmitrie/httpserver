@@ -3,7 +3,6 @@ package handlers;
 import core.Handler;
 import core.Request;
 import core.Response;
-import core.ServerConfiguration;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -14,16 +13,14 @@ import static core.Server.*;
 
 public class FileSystemHandler extends Handler {
 
-  public FileSystemHandler(ServerConfiguration serverConfiguration) {
-    super(serverConfiguration);
-  }
+  private String documentRootPath = "/home/kool/IdeaProjects/httpserver/test/web/";
 
   @Override
   public void handle(Request request, Response response) {
     if (response.getResponseStatusCode() != null)
       return;
 
-    String localPath = combinePaths(serverConfiguration.getDocumentRootPath(), request.getRequestURI().getPath());
+    String localPath = combinePaths(getDocumentRootPath(), request.getRequestURI().getPath());
 
     switch (request.getMethod()) {
       case "GET": case "HEAD":
@@ -40,5 +37,13 @@ public class FileSystemHandler extends Handler {
       default:
         break;
     }
+  }
+
+  public String getDocumentRootPath() {
+    return documentRootPath;
+  }
+
+  public void setDocumentRootPath(String documentRootPath) {
+    this.documentRootPath = documentRootPath;
   }
 }
