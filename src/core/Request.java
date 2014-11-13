@@ -99,14 +99,14 @@ public class Request extends IncomingHttpMessage {
 
   public void setQueryParameters(URI uri) throws UnsupportedEncodingException, MalformedURLException {
     URL url = uri.toURL();
-    setQueryParameters(new LinkedHashMap<String, List<String>>());
+    setQueryParameters(new LinkedHashMap<>());
     if (url.getQuery() != null) {
       String[] parameters = url.getQuery().split("&");
       for (String parameter : parameters) {
         String[] splitParameter = parameter.split("=", 2);
 
         String key = URLDecoder.decode(splitParameter[0], serverConfiguration.getDefaultCharset().name());
-        List<String> value = queryParameters.getOrDefault(key, new LinkedList<String>());
+        List<String> value = queryParameters.getOrDefault(key, new LinkedList<>());
         if (splitParameter.length == 2)
           value.add(URLDecoder.decode(splitParameter[1], serverConfiguration.getDefaultCharset().name()));
         else
