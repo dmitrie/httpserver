@@ -1,7 +1,5 @@
 package core;
 
-import java.nio.charset.Charset;
-import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -15,7 +13,6 @@ public class ServerConfiguration {
     add("HEAD");
   }};
   private boolean absoluteUriIsAllowed = false;
-  private Charset defaultCharset = StandardCharsets.UTF_8;
   private int numberOfThreads = 10;
 
   public int getMaximumURILength() {
@@ -36,10 +33,6 @@ public class ServerConfiguration {
 
   public boolean isAbsoluteUriIsAllowed() {
     return absoluteUriIsAllowed;
-  }
-
-  public Charset getDefaultCharset() {
-    return defaultCharset;
   }
 
   public int getNumberOfThreads() {
@@ -64,10 +57,6 @@ public class ServerConfiguration {
 
   public void setAbsoluteUriIsAllowed(boolean absoluteUriIsAllowed) {
     this.absoluteUriIsAllowed = absoluteUriIsAllowed;
-  }
-
-  public void setDefaultCharset(Charset defaultCharset) {
-    this.defaultCharset = defaultCharset;
   }
 
   public void setNumberOfThreads(int numberOfThreads) {

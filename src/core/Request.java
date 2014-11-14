@@ -4,7 +4,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 import java.net.*;
-import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
@@ -18,16 +17,13 @@ public class Request extends IncomingHttpMessage {
   private String method;
   private URI requestURI;
   private Map<String, List<String>> queryParameters;
-  private Charset defaultCharset;
 
   public Request(ServerConfiguration serverConfiguration) {
     this.serverConfiguration = serverConfiguration;
-    this.defaultCharset = serverConfiguration.getDefaultCharset();
   }
 
   public Request(InputStream in, ServerConfiguration serverConfiguration) throws IOException {
     this.serverConfiguration = serverConfiguration;
-    this.defaultCharset = serverConfiguration.getDefaultCharset();
     try {
       String[] requestLineAndHeaders = readStartLineAndHeaders(in).split(CRLF,2);
 
@@ -40,6 +36,7 @@ public class Request extends IncomingHttpMessage {
 
       setRequestLineMembers(requestLineAndHeaders[0]);
 
+      setBodyCharset(getParsedBodyCharset(getHeader("Content-Type")));
       setBody(readBody(in));
 
       if (getBody() != null && !getHeader("Content-Length").equals(getContentLength()))
@@ -151,19 +148,11 @@ public class Request extends IncomingHttpMessage {
     return queryParameters;
   }
 
-  public Charset getDefaultCharset() {
-    return defaultCharset;
-  }
-
   public void setRequestURI(URI requestURI) {
     this.requestURI = requestURI;
   }
 
   public void setQueryParameters(Map<String, List<String>> queryParameters) {
     this.queryParameters = queryParameters;
-  }
-
-  public void setDefaultCharset(Charset defaultCharset) {
-    this.defaultCharset = defaultCharset;
   }
 }

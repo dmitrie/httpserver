@@ -1,8 +1,12 @@
 package core;
 
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import static core.HttpRequestRegEx.BasicRules.*;
+import static java.nio.charset.Charset.forName;
 
 public class HttpRequestRegEx {
 
@@ -51,6 +55,10 @@ public class HttpRequestRegEx {
     "[^ ]+ [^ ]+ [^ ]+"
   );
 
+  private static final Pattern CHARSET_FROM_CONTENT_TYPE = Pattern.compile(
+    ".*;(" + LWS + ")*charset=(" + TOKEN + ").*"
+  );
+
   public static boolean validateHeader(String headers) {
     return VALID_HEADER.matcher(headers).matches();
   }
@@ -69,6 +77,16 @@ public class HttpRequestRegEx {
 
   public static String replaceMultipleLWSWithSingleSpace(String headers) {
     return headers.replaceAll("(" + LWS + ")+", " ");
+  }
+
+  public static Charset getParsedBodyCharset(String contentType) {
+    try {
+      Matcher matcher = CHARSET_FROM_CONTENT_TYPE.matcher(contentType);
+      matcher.matches();
+      return forName(matcher.group(3));
+    } catch (Exception e) {
+      return StandardCharsets.ISO_8859_1;
+    }
   }
 }
 

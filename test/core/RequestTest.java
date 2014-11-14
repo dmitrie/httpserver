@@ -6,6 +6,7 @@ import org.springframework.util.LinkedCaseInsensitiveMap;
 
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
 
 import static core.HttpStatusCode.*;
 import static org.junit.Assert.*;
@@ -494,5 +495,67 @@ public class RequestTest {
     assertEquals("A&B", request.getQueryParameters().get("a").get(0));
     assertEquals("c&d=e", request.getQueryParameters().get("b").get(0));
     assertEquals("http://www.google.com/test?a=A%26B&b=c%26d%3De", request.getRequestURI().toString());
+  }
+
+  @Test
+  public void testConstructorReadNonASCIIHeadersInISO_8859_1Charset() throws Exception {
+    String requestString = "GET /test.html HTTP/1.0\r\n" +
+      "Host: www.google.com\r\n" +
+      "Non-ASCII-header: a\u00C8b\r\n\r\n";
+    InputStream in = new ByteArrayInputStream(requestString.getBytes(StandardCharsets.ISO_8859_1));
+
+    Request request = new Request(in, serverConfiguration);
+    assertEquals("a\u00C8b", request.getHeader("Non-ASCII-header"));
+    assertEquals(null, request.getResponseStatusCode());
+  }
+
+  @Test
+  public void testConstructorReadNonASCIIHeadersInOtherThanISO_8859_1Charset() throws Exception {
+    String requestString = "GET /test.html HTTP/1.0\r\n" +
+      "Host: www.google.com\r\n" +
+      "Non-ASCII-header: a\u00C8b\r\n\r\n";
+    InputStream in = new ByteArrayInputStream(requestString.getBytes());
+
+    Request request = new Request(in, serverConfiguration);
+    assertNotEquals("a\u00C8b", request.getHeader("Non-ASCII-header"));
+    assertEquals(null, request.getResponseStatusCode());
+  }
+
+  @Test
+  public void testConstructorReadBodyInOtherThanDefaultCharset() throws Exception {
+    String requestString = "POST /test HTTP/1.0\r\n" +
+      "Host: www.google.com\r\n" +
+      "Content-Type: text/html; charset=UTF-16\r\n" +
+      "Content-length: 12\r\n\r\n";
+    InputStream in = new ByteArrayInputStream(mergeByteArrays(
+      requestString.getBytes(StandardCharsets.ISO_8859_1),
+      "body\u00C8".getBytes(StandardCharsets.UTF_16)
+    ));
+
+    Request request = new Request(in, serverConfiguration);
+    assertEquals("body\u00C8", request.getBody());
+    assertEquals(null, request.getResponseStatusCode());
+  }
+
+  @Test
+  public void testConstructorReadBodyInDefaultCharset() throws Exception {
+    String requestString = "POST /test HTTP/1.0\r\n" +
+      "Host: www.google.com\r\n" +
+      "Content-length: 5\r\n\r\n";
+    InputStream in = new ByteArrayInputStream(mergeByteArrays(
+      requestString.getBytes(StandardCharsets.ISO_8859_1),
+      "body\u00C8".getBytes(StandardCharsets.ISO_8859_1)
+    ));
+
+    Request request = new Request(in, serverConfiguration);
+    assertEquals("body\u00C8", request.getBody());
+    assertEquals(null, request.getResponseStatusCode());
+  }
+
+  private byte[] mergeByteArrays(byte[] firstArray, byte[] secondArray) {
+    byte[] resultingArray = new byte[firstArray.length + secondArray.length];
+    System.arraycopy(firstArray, 0, resultingArray, 0, firstArray.length);
+    System.arraycopy(secondArray, 0, resultingArray, firstArray.length, secondArray.length);
+    return resultingArray;
   }
 }

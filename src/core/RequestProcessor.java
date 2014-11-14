@@ -1,15 +1,15 @@
 package core;
 
+import java.io.IOException;
 import java.io.InputStream;
-import java.io.PrintWriter;
+import java.io.OutputStream;
 import java.net.Socket;
-import java.net.SocketException;
 import java.net.SocketTimeoutException;
+import java.nio.charset.StandardCharsets;
 import java.util.Map;
 import java.util.regex.Pattern;
 
 import static core.HttpStatusCode.*;
-import static core.Server.respondWithError;
 
 public class RequestProcessor implements Runnable {
   private final Socket clientSocket;
@@ -24,7 +24,7 @@ public class RequestProcessor implements Runnable {
 
   @Override
   public void run() {
-    try (PrintWriter out = new PrintWriter(clientSocket.getOutputStream(), true)) {
+    try (OutputStream out = clientSocket.getOutputStream()) {
       try (InputStream in = clientSocket.getInputStream()) {
         process(out, in);
       } finally {
@@ -36,7 +36,7 @@ public class RequestProcessor implements Runnable {
     }
   }
 
-  private void process(PrintWriter out, InputStream in) throws SocketException {
+  private void process(OutputStream out, InputStream in) throws IOException {
     clientSocket.setSoTimeout(serverConfiguration.getRequestTimeOut());
 
     Request request = new Request(serverConfiguration);
@@ -46,7 +46,7 @@ public class RequestProcessor implements Runnable {
 
       executeHandlers(request, response);
 
-      out.write(response.generateMessage());
+      out.write(response.generateMessage().getBytes(StandardCharsets.ISO_8859_1));
       out.flush();
     } catch (SocketTimeoutException e) {
       respondWithError(out, request, REQUEST_TIMEOUT);
@@ -63,5 +63,12 @@ public class RequestProcessor implements Runnable {
 
     if (response.getResponseStatusCode() == null)
       response.setErrorBodyAndHeaders(FORBIDDEN);
+  }
+
+  public static void respondWithError(OutputStream out, Request request, HttpStatusCode code) throws IOException {
+    Response response = new Response(request);
+    response.setErrorBodyAndHeaders(code);
+    out.write(response.generateMessage().getBytes(StandardCharsets.ISO_8859_1));
+    out.flush();
   }
 }

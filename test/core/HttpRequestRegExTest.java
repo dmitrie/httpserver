@@ -3,8 +3,7 @@ package core;
 import org.junit.Test;
 
 import static core.HttpRequestRegEx.*;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
 public class HttpRequestRegExTest {
 
@@ -141,6 +140,14 @@ public class HttpRequestRegExTest {
     assertFalse(validateRequestLineFormat("GET / HTTP/ 1.1"));
     assertFalse(validateRequestLineFormat("GET\t/ HTTP/1.1"));
     assertFalse(validateRequestLineFormat("GET /\tHTTP/1.1"));
+  }
+
+  @Test
+  public void testGetParsedBodyCharset_RFC2616_3_4_and_3_7() throws Exception {
+    assertEquals("ISO-8859-4", getParsedBodyCharset("text/html; charset=ISO-8859-4").toString());
+    assertEquals("ISO-8859-1", getParsedBodyCharset("text/html; charset=ISO-8859-4; charset=ISO-8859-1").toString());
+    assertEquals("ISO-8859-4", getParsedBodyCharset("abc;charset=ISO-8859-4").toString());
+    assertEquals("ISO-8859-1", getParsedBodyCharset("foo bar").toString());
   }
 }
 

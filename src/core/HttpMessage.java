@@ -3,7 +3,6 @@ package core;
 import org.springframework.util.LinkedCaseInsensitiveMap;
 
 import java.nio.charset.Charset;
-import java.nio.charset.StandardCharsets;
 import java.util.Map;
 import java.util.stream.Collectors;
 
@@ -12,9 +11,9 @@ import static core.HttpRequestRegEx.CRLF;
 public class HttpMessage {
   protected String protocol;
   protected String startLine;
-  protected Map<String, String> headers = new LinkedCaseInsensitiveMap();
+  protected Map<String, String> headers = new LinkedCaseInsensitiveMap<>();
   protected String body;
-  protected Charset bodyCharset = StandardCharsets.UTF_8;
+  protected Charset bodyCharset;
   protected HttpStatusCode responseStatusCode;
   protected ServerConfiguration serverConfiguration;
 
@@ -80,7 +79,7 @@ public class HttpMessage {
     this.body = body;
   }
 
-  public void setBodyCharset(Charset bodyCharset) {
+  void setBodyCharset(Charset bodyCharset) {
     this.bodyCharset = bodyCharset;
   }
 

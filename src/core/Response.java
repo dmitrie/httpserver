@@ -1,11 +1,13 @@
 package core;
 
+import java.nio.charset.StandardCharsets;
+
 public class Response extends HttpMessage {
   private Request request;
 
   public Response(Request request) {
     setRequest(request);
-    setBodyCharset(request.getDefaultCharset());
+    setBodyCharset(StandardCharsets.ISO_8859_1);
     setProtocol(request.getProtocol() == null ? "HTTP/1.1" : request.getProtocol());
     if (request.getResponseStatusCode() != null)
       setErrorBodyAndHeaders(request.getResponseStatusCode());

@@ -149,4 +149,14 @@ public class ServerTest {
       response.setBody(response.getBody() + "bar");
     }
   }
+
+  @Test
+  public void testHtmlFileHandlerSuccessNonASCIIFileInISO_8859_1_Returned() throws Exception {
+    IncomingHttpMessage response = sendRequest(
+      "GET /folder/inner%20folder/non-ASCII-test_in_ISO-8859-1.html HTTP/1.1\r\nHost: localhost\r\n\r\n");
+
+    assertEquals("HTTP/1.1 " + OK, response.getStartLine());
+    assertEquals("41", response.getHeader("Content-length"));
+    assertEquals("<h3>«Test» file inside inner folder</h3>\n", response.getBody());
+  }
 }

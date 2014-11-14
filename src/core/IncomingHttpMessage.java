@@ -2,6 +2,7 @@ package core;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 
 import static core.HttpRequestRegEx.*;
@@ -17,7 +18,7 @@ public class IncomingHttpMessage extends HttpMessage {
       if (stringBuilder.toString().equals(CRLF))
         stringBuilder = new StringBuilder();
 
-      stringBuilder.append((char) byteRead);
+      stringBuilder.append(new String(new byte[]{(byte) byteRead}, StandardCharsets.ISO_8859_1));
 
       if ((CRLF+CRLF).equals(stringBuilder.substring(Math.max(0,stringBuilder.length()-4))))
         break;
@@ -44,7 +45,10 @@ public class IncomingHttpMessage extends HttpMessage {
 
     byte[] buffer = new byte[numericContentLength];
     int bytesActuallyRead = in.read(buffer, 0, numericContentLength);
-    return new String(buffer, 0, bytesActuallyRead);
+    return new String(
+      buffer, 0, bytesActuallyRead,
+      getBodyCharset() == null ? StandardCharsets.ISO_8859_1 : getBodyCharset()
+    );
   }
 
   @Override

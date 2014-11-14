@@ -3,7 +3,6 @@ package core;
 import handlers.FileSystemHandler;
 
 import java.io.IOException;
-import java.io.PrintWriter;
 import java.net.ServerSocket;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
@@ -15,8 +14,8 @@ import java.util.concurrent.TimeUnit;
 import java.util.regex.Pattern;
 
 public class Server {
-  private volatile ServerConfiguration serverConfiguration;
-  private volatile boolean serverIsRunning = false;
+  private ServerConfiguration serverConfiguration;
+  private boolean serverIsRunning = false;
   private ServerSocket serverSocket;
   public Map<Pattern, Handler> handlers = new LinkedHashMap<>();
 
@@ -57,13 +56,6 @@ public class Server {
       System.out.println("Couldn't stop all threads");
       System.out.println(e.getMessage());
     }
-  }
-
-  public static void respondWithError(PrintWriter out, Request request, HttpStatusCode code) {
-    Response response = new Response(request);
-    response.setErrorBodyAndHeaders(code);
-    out.write(response.generateMessage());
-    out.flush();
   }
 
   public static String getServerTime() {
