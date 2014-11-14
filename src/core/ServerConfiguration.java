@@ -12,6 +12,10 @@ public class ServerConfiguration {
     add("POST");
     add("HEAD");
   }};
+  private List<String> supportedHttpVersions = new ArrayList<String>(){{
+    add("HTTP/1.0");
+    add("HTTP/1.1");
+  }};
   private boolean absoluteUriIsAllowed = false;
   private int numberOfThreads = 10;
 
@@ -39,6 +43,10 @@ public class ServerConfiguration {
     return numberOfThreads;
   }
 
+  public List<String> getSupportedHttpVersions() {
+    return supportedHttpVersions;
+  }
+
   public void setMaximumURILength(int maximumURILength) {
     this.maximumURILength = maximumURILength;
   }
@@ -61,5 +69,9 @@ public class ServerConfiguration {
 
   public void setNumberOfThreads(int numberOfThreads) {
     this.numberOfThreads = numberOfThreads;
+  }
+
+  public void setSupportedHttpVersions(List<String> supportedHttpVersions) {
+    this.supportedHttpVersions = supportedHttpVersions;
   }
 }

@@ -1,7 +1,9 @@
 TODO
 ====
-    
-    
+- test-driven
+- reduce amount of src code
+- split big methods
+- move relevant methods to utils package    
     
 IDEA SHORTCUTS
 ==============

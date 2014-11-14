@@ -1,5 +1,7 @@
 package core;
 
+import util.HttpError;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
@@ -10,8 +12,8 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
-import static core.HttpRequestRegEx.*;
-import static core.HttpStatusCode.*;
+import static util.HttpRequestRegEx.*;
+import static util.HttpStatusCode.*;
 
 public class Request extends IncomingHttpMessage {
   private String method;
@@ -102,20 +104,23 @@ public class Request extends IncomingHttpMessage {
   public void setQueryParameters(URI uri) throws UnsupportedEncodingException, MalformedURLException {
     URL url = uri.toURL();
     setQueryParameters(new LinkedHashMap<>());
-    if (url.getQuery() != null) {
-      String[] parameters = url.getQuery().split("&");
-      for (String parameter : parameters) {
-        String[] splitParameter = parameter.split("=", 2);
+    if (url.getQuery() != null)
+      parseAndSetQueryParameters(url.getQuery());
+  }
 
-        String key = URLDecoder.decode(splitParameter[0], StandardCharsets.UTF_8.name());
-        List<String> value = queryParameters.getOrDefault(key, new LinkedList<>());
-        if (splitParameter.length == 2)
-          value.add(URLDecoder.decode(splitParameter[1], StandardCharsets.UTF_8.name()));
-        else
-          value.add(null);
+  public void parseAndSetQueryParameters(String parameters) throws UnsupportedEncodingException {
+    String[] splitParameters = parameters.split("&");
+    for (String parameter : splitParameters) {
+      String[] splitParameter = parameter.split("=", 2);
 
-        queryParameters.put(key, value);
-      }
+      String key = URLDecoder.decode(splitParameter[0], StandardCharsets.UTF_8.name());
+      List<String> value = queryParameters.getOrDefault(key, new LinkedList<>());
+      if (splitParameter.length == 2)
+        value.add(URLDecoder.decode(splitParameter[1], StandardCharsets.UTF_8.name()));
+      else
+        value.add(null);
+
+      queryParameters.put(key, value);
     }
   }
 

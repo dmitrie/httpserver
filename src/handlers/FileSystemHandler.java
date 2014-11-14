@@ -4,15 +4,11 @@ import core.Handler;
 import core.Request;
 import core.Response;
 
-import java.io.File;
 import java.io.IOException;
-import java.nio.charset.Charset;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 
-import static core.HttpStatusCode.NOT_FOUND;
-import static core.HttpStatusCode.OK;
-import static core.Server.getServerTime;
+import static util.Helper.*;
+import static util.HttpStatusCode.NOT_FOUND;
+import static util.HttpStatusCode.OK;
 
 public class FileSystemHandler extends Handler {
 
@@ -35,8 +31,8 @@ public class FileSystemHandler extends Handler {
           response.setBody(readFile(localPath, response.getBodyCharset()));
           response.setResponseStatusCode(OK);
         } catch (IOException e) {
-          response.setErrorBodyAndHeaders(NOT_FOUND);
-          return;
+          response.setBody("<div style=\"text-align: center;\"><h1 style=\"color: red;\">404 Error</h1><br>File not found</div>");
+          response.setResponseStatusCode(NOT_FOUND);
         }
         response.setHeader("Content-Type", "text/html; charset=" + response.getBodyCharset());
         response.setHeader("Last-modified", getServerTime());
@@ -44,17 +40,6 @@ public class FileSystemHandler extends Handler {
       default:
         break;
     }
-  }
-
-  public static String readFile(String path, Charset charset) throws IOException {
-    byte[] encoded = Files.readAllBytes(Paths.get(path));
-    return new String(encoded, charset);
-  }
-
-  public static String combinePaths(String path1, String path2) {
-    File file1 = new File(path1);
-    File file2 = new File(file1, path2);
-    return file2.getPath();
   }
 
   public String getDocumentRootPath() {

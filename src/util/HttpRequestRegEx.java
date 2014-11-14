@@ -1,12 +1,12 @@
-package core;
+package util;
 
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import static core.HttpRequestRegEx.BasicRules.*;
 import static java.nio.charset.Charset.forName;
+import static util.HttpRequestRegEx.BasicRules.*;
 
 public class HttpRequestRegEx {
 

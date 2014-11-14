@@ -1,5 +1,7 @@
 package core;
 
+import util.HttpStatusCode;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -9,7 +11,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.Map;
 import java.util.regex.Pattern;
 
-import static core.HttpStatusCode.*;
+import static util.HttpStatusCode.*;
 
 public class RequestProcessor implements Runnable {
   private final Socket clientSocket;
@@ -62,12 +64,12 @@ public class RequestProcessor implements Runnable {
           entry.getValue().handle(request, response);
 
     if (response.getResponseStatusCode() == null)
-      response.setErrorBodyAndHeaders(FORBIDDEN);
+      response.setStandardResponse(FORBIDDEN);
   }
 
-  public static void respondWithError(OutputStream out, Request request, HttpStatusCode code) throws IOException {
+  public void respondWithError(OutputStream out, Request request, HttpStatusCode code) throws IOException {
     Response response = new Response(request);
-    response.setErrorBodyAndHeaders(code);
+    response.setStandardResponse(code);
     out.write(response.generateMessage().getBytes(StandardCharsets.ISO_8859_1));
     out.flush();
   }

@@ -1,56 +1,43 @@
 package core;
 
-import java.nio.charset.StandardCharsets;
+import util.HttpStatusCode;
+
+import static util.Helper.getServerTime;
 
 public class Response extends HttpMessage {
-  private Request request;
+  private String requestMethod;
 
   public Response(Request request) {
-    setRequest(request);
-    setBodyCharset(StandardCharsets.ISO_8859_1);
-    setProtocol(request.getProtocol() == null ? "HTTP/1.1" : request.getProtocol());
+    setRequestFieldsNeededInResponse(request);
     if (request.getResponseStatusCode() != null)
-      setErrorBodyAndHeaders(request.getResponseStatusCode());
+      setStandardResponse(request.getResponseStatusCode());
   }
 
-  @Override
-  public void setHeader(String header, String value) {
-    getHeaders().put(header, value);
+  public void setRequestFieldsNeededInResponse(Request request) {
+    setProtocol(request.getProtocol() == null ? "HTTP/1.1" : request.getProtocol());
+    this.requestMethod = request.getMethod();
   }
 
-  public void setErrorBodyAndHeaders(HttpStatusCode code) {
+  public void setStandardResponse(HttpStatusCode code) {
     setResponseStatusCode(code);
-
-    switch (code.getCode()) {
-      case 404:
-        setBody("<div style=\"text-align: center;\"><h1 style=\"color: red;\">404 Error</h1><br>File not found</div>");
-        break;
-      default:
-        setBody(code.toString());
-        break;
-    }
-
+    setBody(code.toString());
     setHeader("Content-Type", "text/html; charset=" + getBodyCharset());
-    setHeader("Last-modified", Server.getServerTime());
+    setHeader("Last-modified", getServerTime());
   }
 
   @Override
   public String generateMessage() {
+    finalizeResponse();
+    return super.generateMessage();
+  }
+
+  public void finalizeResponse() {
     setStartLine(getProtocol() + " " + getResponseStatusCode());
-    if ("HEAD".equals(getRequest().getMethod()))
-      setBody(null);
 
     if (getBody() != null)
       setHeader("Content-Length", getContentLength());
 
-    return super.generateMessage();
-  }
-
-  public Request getRequest() {
-    return request;
-  }
-
-  public void setRequest(Request request) {
-    this.request = request;
+    if ("HEAD".equals(requestMethod))
+      setBody(null);
   }
 }

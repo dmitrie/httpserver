@@ -2,14 +2,15 @@ package core;
 
 import org.junit.Before;
 import org.junit.Test;
+import util.HttpError;
 import util.LinkedCaseInsensitiveMap;
 
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 
-import static core.HttpStatusCode.*;
 import static org.junit.Assert.*;
+import static util.HttpStatusCode.*;
 
 public class RequestTest {
 

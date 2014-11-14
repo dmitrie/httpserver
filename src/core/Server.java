@@ -4,8 +4,6 @@ import handlers.FileSystemHandler;
 
 import java.io.IOException;
 import java.net.ServerSocket;
-import java.text.SimpleDateFormat;
-import java.util.Calendar;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
@@ -56,12 +54,6 @@ public class Server {
       System.out.println("Couldn't stop all threads");
       System.out.println(e.getMessage());
     }
-  }
-
-  public static String getServerTime() {
-    Calendar calendar = Calendar.getInstance();
-    SimpleDateFormat dateFormat = new SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss zzz");
-    return dateFormat.format(calendar.getTime());
   }
 
   public boolean isServerIsRunning() {

@@ -8,8 +8,8 @@ import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 
-import static core.HttpStatusCode.*;
 import static org.junit.Assert.assertEquals;
+import static util.HttpStatusCode.*;
 
 public class ResponseTest {
 
@@ -34,7 +34,7 @@ public class ResponseTest {
   @Test
   public void testSetErrorBodyAndHeadersDefaultResponse() throws Exception {
     Response response = new Response(new Request(serverConfiguration));
-    response.setErrorBodyAndHeaders(HTTP_VERSION_NOT_SUPPORTED);
+    response.setStandardResponse(HTTP_VERSION_NOT_SUPPORTED);
 
     assertEquals(HTTP_VERSION_NOT_SUPPORTED, response.getResponseStatusCode());
     assertEquals(HTTP_VERSION_NOT_SUPPORTED.toString(), response.getBody());
@@ -114,8 +114,10 @@ public class ResponseTest {
 
   @Test
   public void testGenerateMessageRemovesBodyFromResponseToHead_RFC2616_14_13() throws Exception {
-    Response response = new Response(new Request(serverConfiguration));
-    response.getRequest().setMethod("HEAD");
+    Request request = new Request(serverConfiguration);
+    request.setMethod("HEAD");
+
+    Response response = new Response(request);
     response.setResponseStatusCode(OK);
     response.setBody("test");
     response.setHeader("Content-Length", "4");

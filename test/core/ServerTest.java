@@ -13,9 +13,9 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.regex.Pattern;
 
-import static core.HttpRequestRegEx.CRLF;
-import static core.HttpStatusCode.*;
 import static org.junit.Assert.assertEquals;
+import static util.HttpRequestRegEx.CRLF;
+import static util.HttpStatusCode.*;
 
 public class ServerTest {
   Thread serverThread;

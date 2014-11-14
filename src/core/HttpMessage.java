@@ -1,29 +1,23 @@
 package core;
 
+import util.HttpStatusCode;
 import util.LinkedCaseInsensitiveMap;
 
 import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-import static core.HttpRequestRegEx.CRLF;
+import static util.HttpRequestRegEx.CRLF;
 
 public class HttpMessage {
   protected String protocol;
   protected String startLine;
   protected Map<String, String> headers = new LinkedCaseInsensitiveMap();
   protected String body;
-  protected Charset bodyCharset;
+  protected Charset bodyCharset = StandardCharsets.ISO_8859_1;
   protected HttpStatusCode responseStatusCode;
   protected ServerConfiguration serverConfiguration;
-
-  public String getHeader(String header) {
-    return getHeaders().get(header);
-  }
-
-  public void setHeader(String header, String value) {
-    getHeaders().put(header, value);
-  }
 
   public String generateMessage() {
     String headersString = getHeaders().entrySet().stream().map((entry) -> entry.getKey() + ": " + entry.getValue()).collect(Collectors.joining(CRLF));
@@ -37,6 +31,14 @@ public class HttpMessage {
 
   public String getContentLength() {
     return "" + getBody().getBytes(getBodyCharset()).length;
+  }
+
+  public String getHeader(String header) {
+    return getHeaders().get(header);
+  }
+
+  public void setHeader(String header, String value) {
+    getHeaders().put(header, value);
   }
 
   public String getProtocol() {

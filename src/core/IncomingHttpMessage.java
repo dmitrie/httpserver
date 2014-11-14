@@ -1,30 +1,35 @@
 package core;
 
+import util.HttpError;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
-import java.util.Arrays;
 
-import static core.HttpRequestRegEx.*;
-import static core.HttpStatusCode.BAD_REQUEST;
-import static core.HttpStatusCode.HTTP_VERSION_NOT_SUPPORTED;
+import static util.HttpRequestRegEx.*;
+import static util.HttpStatusCode.BAD_REQUEST;
+import static util.HttpStatusCode.HTTP_VERSION_NOT_SUPPORTED;
 
 public class IncomingHttpMessage extends HttpMessage {
+
   public String readStartLineAndHeaders(InputStream in) throws IOException {
     StringBuilder stringBuilder = new StringBuilder();
 
     int byteRead;
     while ((byteRead = in.read()) != -1) {
-      if (stringBuilder.toString().equals(CRLF))
-        stringBuilder = new StringBuilder();
-
+      removeLeadingNewLines(stringBuilder);
       stringBuilder.append(new String(new byte[]{(byte) byteRead}, StandardCharsets.ISO_8859_1));
 
-      if ((CRLF+CRLF).equals(stringBuilder.substring(Math.max(0,stringBuilder.length()-4))))
+      if (stringBuilder.length()>=4 && (CRLF+CRLF).equals(stringBuilder.substring(stringBuilder.length()-4)))
         break;
     }
 
     return stringBuilder.toString();
+  }
+
+  public void removeLeadingNewLines(StringBuilder stringBuilder) {
+    if (stringBuilder.toString().equals(CRLF))
+      stringBuilder.delete(0, stringBuilder.length());
   }
 
   public String readBody(InputStream in) throws IOException {
@@ -33,22 +38,22 @@ public class IncomingHttpMessage extends HttpMessage {
     if (contentLength == null)
       return null;
 
-    int numericContentLength;
-    try {
-      numericContentLength = Integer.parseInt(contentLength);
-    } catch (NumberFormatException e) {
-      throw new HttpError(BAD_REQUEST);
-    }
-
+    int numericContentLength = parseContentLengthHeader(contentLength);
     if (numericContentLength == 0)
       return "";
 
     byte[] buffer = new byte[numericContentLength];
     int bytesActuallyRead = in.read(buffer, 0, numericContentLength);
-    return new String(
-      buffer, 0, bytesActuallyRead,
-      getBodyCharset() == null ? StandardCharsets.ISO_8859_1 : getBodyCharset()
-    );
+    return new String(buffer, 0, bytesActuallyRead, getBodyCharset());
+  }
+
+  public int parseContentLengthHeader(String contentLength) {
+    try {
+      int numericContentLength = Integer.parseInt(contentLength);
+      return numericContentLength;
+    } catch (NumberFormatException e) {
+      throw new HttpError(BAD_REQUEST);
+    }
   }
 
   @Override
@@ -56,29 +61,28 @@ public class IncomingHttpMessage extends HttpMessage {
     if (!validateProtocol(protocol))
       throw new HttpError(BAD_REQUEST);
 
-    if (!Arrays.asList("HTTP/1.0", "HTTP/1.1").contains(protocol))
+    if (!serverConfiguration.getSupportedHttpVersions().contains(protocol))
       throw new HttpError(HTTP_VERSION_NOT_SUPPORTED);
 
-    this.protocol = protocol;
+    super.setProtocol(protocol);
   }
 
   @Override
   public void setHeader(String header, String value) {
-    String headerValue = getHeader(header);
-
-    getHeaders().put(header, (headerValue == null ? "" : headerValue + ", ") + value.trim());
+    String existingHeaderValue = getHeader(header);
+    super.setHeader(header, (existingHeaderValue == null ? "" : existingHeaderValue + ", ") + value.trim());
   }
 
   public void setHeader(String headerValuePair) {
     if (!validateHeader(headerValuePair))
       throw new HttpError(BAD_REQUEST);
 
-    String[] headerValuePairSplitByColon = headerValuePair.split(":", 2);
-    setHeader(headerValuePairSplitByColon[0], headerValuePairSplitByColon[1]);
+    String[] splitHeaderValuePair = headerValuePair.split(":", 2);
+    setHeader(splitHeaderValuePair[0], splitHeaderValuePair[1]);
   }
 
-  public void parseAndSetHeaders(String allHeaders) {
-    for (String header : replaceMultipleLWSWithSingleSpace(allHeaders).split(CRLF))
+  public void parseAndSetHeaders(String multipleHeaders) {
+    for (String header : replaceMultipleLWSWithSingleSpace(multipleHeaders).split(CRLF))
       setHeader(header);
   }
 }

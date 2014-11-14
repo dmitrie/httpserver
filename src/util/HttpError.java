@@ -1,4 +1,4 @@
-package core;
+package util;
 
 public class HttpError extends RuntimeException {
   public final HttpStatusCode errorCode;
