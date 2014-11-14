@@ -171,6 +171,7 @@ public class RequestTest {
     assertEquals("no-cache", request.getHeader("CACHe-Control"));
     request.setHeader("CACHE-controL", "no-store");
     assertEquals("no-cache, no-store", request.getHeader("cache-Control"));
+    assertEquals(null, request.getResponseStatusCode());
   }
 
   @Test
@@ -329,6 +330,7 @@ public class RequestTest {
     Request request = new Request(serverConfiguration);
     request.setHeader("Cache-Control", "no-cache");
     assertEquals("Cache-Control", request.getHeaders().keySet().iterator().next());
+    assertEquals(null, request.getResponseStatusCode());
   }
 
   @Test
@@ -342,6 +344,7 @@ public class RequestTest {
     request.setRequestLineMembers("OPTIONS * HTTP/1.1");
 
     assertEquals(null, request.getRequestURI());
+    assertEquals(null, request.getResponseStatusCode());
   }
 
   @Test
@@ -361,6 +364,8 @@ public class RequestTest {
     request.setHeader("Host", "www.google.com");
     request.setRequestLineMembers("GET /test.html HTTP/1.1");
     assertEquals("http://www.google.com/test.html", request.getRequestURI().toString());
+
+    assertEquals(null, request.getResponseStatusCode());
   }
 
   @Test
@@ -368,6 +373,8 @@ public class RequestTest {
     Request request = new Request(serverConfiguration);
     request.setRequestLineMembers("GET http://google.com/test.html HTTP/1.1");
     assertEquals("http://google.com/test.html", request.getRequestURI().toString());
+
+    assertEquals(null, request.getResponseStatusCode());
   }
 
   @Test
@@ -382,6 +389,7 @@ public class RequestTest {
 
     try {
       request.setRequestLineMembers("GET /1234567890 HTTP/1.1");
+      fail();
     } catch (HttpError e) {
       assertEquals(REQUEST_URI_TOO_LONG, e.getErrorCode());
     }
@@ -441,6 +449,8 @@ public class RequestTest {
     assertEquals(8888, request.getRequestURI().getPort());
     assertEquals("/", request.getRequestURI().getPath());
     assertEquals("http://www.google.com:8888/", request.getRequestURI().toString());
+
+    assertEquals(null, request.getResponseStatusCode());
   }
 
   @Test
@@ -452,6 +462,8 @@ public class RequestTest {
     assertEquals(8888, request.getRequestURI().getPort());
     assertEquals("/", request.getRequestURI().getPath());
     assertEquals("http://www.google.com:8888/", request.getRequestURI().toString());
+
+    assertEquals(null, request.getResponseStatusCode());
   }
 
   @Test
@@ -464,6 +476,20 @@ public class RequestTest {
     assertEquals("a=b", request.getRequestURI().getQuery());
     assertEquals("abc", request.getRequestURI().getFragment());
     assertEquals("http://www.google.com/?a=b#abc", request.getRequestURI().toString());
+
+    assertEquals(null, request.getResponseStatusCode());
+  }
+
+  @Test
+  public void testSetRequestSingleParameterIsCorrectlyParsed() throws Exception {
+    Request request = new Request(serverConfiguration);
+    request.setHeader("host", "www.google.com");
+    request.setRequestLineMembers("GET /test?a HTTP/1.1");
+
+    assertEquals("/test", request.getRequestURI().getPath());
+    assertEquals(null, request.getQueryParameters().get("a").get(0));
+
+    assertEquals(null, request.getResponseStatusCode());
   }
 
   @Test
@@ -480,6 +506,70 @@ public class RequestTest {
     assertEquals(null, request.getQueryParameters().get("d").get(1));
     assertEquals("8", request.getQueryParameters().get("a").get(1));
     assertEquals("abc d", request.getQueryParameters().get("d").get(2));
+
+    assertEquals(null, request.getResponseStatusCode());
+  }
+
+  @Test
+  public void testConstructorPostFormUrlEncodedDataParsedCorrectly_HTML401_specification_17_13_4() throws Exception {
+    String requestString = "GET /test HTTP/1.1\r\n" +
+      "Host: www.google.com\r\n" +
+      "Content-Type: application/x-www-form-urlencoded; charset=UTF-8\r\n" +
+      "Content-Length: 31\r\n\r\n" +
+      "a&b=1&&c=&d=5&d&a=8+9&d=abc%20d";
+    InputStream in = new ByteArrayInputStream(requestString.getBytes());
+    Request request = new Request(in, serverConfiguration);
+
+    assertEquals("/test", request.getRequestURI().getPath());
+    assertEquals(null, request.getQueryParameters().get("a").get(0));
+    assertEquals("1", request.getQueryParameters().get("b").get(0));
+    assertEquals("", request.getQueryParameters().get("c").get(0));
+    assertEquals("5", request.getQueryParameters().get("d").get(0));
+    assertEquals(null, request.getQueryParameters().get("d").get(1));
+    assertEquals("8 9", request.getQueryParameters().get("a").get(1));
+    assertEquals("abc d", request.getQueryParameters().get("d").get(2));
+    assertEquals("a&b=1&&c=&d=5&d&a=8+9&d=abc%20d", request.getBody());
+
+    assertEquals(null, request.getResponseStatusCode());
+  }
+
+  @Test
+  public void testConstructorPostNonFormUrlEncodedDataNotParsed_HTML401_specification_17_13_4() throws Exception {
+    String requestString = "GET /test HTTP/1.1\r\n" +
+      "Host: www.google.com\r\n" +
+      "Content-Length: 31\r\n\r\n" +
+      "a&b=1&&c=&d=5&d&a=8+9&d=abc%20d";
+    InputStream in = new ByteArrayInputStream(requestString.getBytes());
+    Request request = new Request(in, serverConfiguration);
+
+    assertEquals(null, request.getQueryParameters());
+    assertEquals("a&b=1&&c=&d=5&d&a=8+9&d=abc%20d", request.getBody());
+
+    assertEquals(null, request.getResponseStatusCode());
+  }
+
+  @Test
+  public void testConstructorMultipartContentTypeNotSupported_HTML401_specification_17_13_4() throws Exception {
+    String requestString = "GET /test HTTP/1.1\r\n" +
+      "Host: www.google.com\r\n" +
+      "Content-Length: 31\r\n" +
+      "Content-Type: multipart/form-data\r\n\r\n" +
+      "a&b=1&&c=&d=5&d&a=8+9&d=abc%20d";
+    InputStream in = new ByteArrayInputStream(requestString.getBytes());
+    Request request = new Request(in, serverConfiguration);
+
+    assertEquals(NOT_IMPLEMENTED, request.getResponseStatusCode());
+  }
+
+  @Test
+  public void testConstructorContentHeaderWithoutBodyIsBadRequest() throws Exception {
+    String requestString = "GET /test HTTP/1.1\r\n" +
+      "Host: www.google.com\r\n" +
+      "Content-whatever: foo bar\r\n\r\n";
+    InputStream in = new ByteArrayInputStream(requestString.getBytes());
+    Request request = new Request(in, serverConfiguration);
+
+    assertEquals(BAD_REQUEST, request.getResponseStatusCode());
   }
 
   @Test
@@ -494,6 +584,8 @@ public class RequestTest {
     assertEquals("A&B", request.getQueryParameters().get("a").get(0));
     assertEquals("c&d=e", request.getQueryParameters().get("b").get(0));
     assertEquals("http://www.google.com/test?a=A%26B&b=c%26d%3De", request.getRequestURI().toString());
+
+    assertEquals(null, request.getResponseStatusCode());
   }
 
   @Test

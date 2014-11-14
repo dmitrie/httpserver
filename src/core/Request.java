@@ -11,6 +11,7 @@ import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.regex.Pattern;
 
 import static util.HttpRequestRegEx.*;
 import static util.HttpStatusCode.*;
@@ -40,6 +41,7 @@ public class Request extends IncomingHttpMessage {
 
       setBodyCharset(getParsedBodyCharset(getHeader("Content-Type")));
       setBody(readBody(in));
+      parseBody();
 
       if (getBody() != null && !getHeader("Content-Length").equals(getContentLength()))
          throw new HttpError(BAD_REQUEST);
@@ -47,6 +49,26 @@ public class Request extends IncomingHttpMessage {
     } catch (HttpError e) {
      setResponseStatusCode(e.getErrorCode());
     }
+  }
+
+  public void parseBody() throws UnsupportedEncodingException {
+    validateContentHeaders();
+
+    String contentType = getHeader("Content-Type");
+    if (contentType != null) {
+      if (contentType.matches(".*multipart/form-data.*"))
+        throw new HttpError(NOT_IMPLEMENTED);
+
+      if (contentType.matches(".*application/x-www-form-urlencoded.*"))
+        parseAndSetQueryParameters(getBody());
+    }
+  }
+
+  public void validateContentHeaders() {
+    if (getBody() == null)
+      for(String key : getHeaders().keySet())
+        if (Pattern.compile("Content-.*", Pattern.CASE_INSENSITIVE).matcher(key).matches())
+          throw new HttpError(BAD_REQUEST);
   }
 
   public void setRequestLineMembers(String requestLine) {
@@ -103,12 +125,12 @@ public class Request extends IncomingHttpMessage {
 
   public void setQueryParameters(URI uri) throws UnsupportedEncodingException, MalformedURLException {
     URL url = uri.toURL();
-    setQueryParameters(new LinkedHashMap<>());
     if (url.getQuery() != null)
       parseAndSetQueryParameters(url.getQuery());
   }
 
   public void parseAndSetQueryParameters(String parameters) throws UnsupportedEncodingException {
+    setQueryParameters(new LinkedHashMap<>());
     String[] splitParameters = parameters.split("&");
     for (String parameter : splitParameters) {
       String[] splitParameter = parameter.split("=", 2);
