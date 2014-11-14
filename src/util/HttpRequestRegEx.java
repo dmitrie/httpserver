@@ -1,7 +1,6 @@
 package util;
 
 import java.nio.charset.Charset;
-import java.nio.charset.StandardCharsets;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -85,7 +84,7 @@ public class HttpRequestRegEx {
       matcher.matches();
       return forName(matcher.group(3));
     } catch (Exception e) {
-      return StandardCharsets.ISO_8859_1;
+      return null;
     }
   }
 }

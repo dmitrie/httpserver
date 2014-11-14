@@ -47,13 +47,20 @@ public class Server {
       }
     }
 
+    stopExecutor(executor);
+  }
+
+  public void stopExecutor(ExecutorService executor) {
     executor.shutdown();
     try {
-      executor.awaitTermination(10, TimeUnit.SECONDS);
-    } catch (InterruptedException e) {
-      System.out.println("Couldn't stop all threads");
-      System.out.println(e.getMessage());
-    }
+      if(!executor.awaitTermination(10, TimeUnit.SECONDS))
+        System.out.println("Couldn't stop all threads");
+    } catch (InterruptedException ignored) {}
+  }
+
+  public void stop() throws IOException {
+    serverSocket.close();
+    serverIsRunning = false;
   }
 
   public boolean isServerIsRunning() {
@@ -74,10 +81,5 @@ public class Server {
 
   public void setHandler(String pattern, Handler handler) {
     this.handlers.put(Pattern.compile(pattern), handler);
-  }
-
-  public void stop() throws IOException {
-    serverSocket.close();
-    serverIsRunning = false;
   }
 }

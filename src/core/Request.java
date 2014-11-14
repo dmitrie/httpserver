@@ -6,6 +6,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 import java.net.*;
+import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
@@ -37,13 +38,17 @@ public class Request extends IncomingHttpMessage {
         throw new HttpError(NOT_IMPLEMENTED);
 
       setRequestLineMembers(requestLineAndHeaders[0]);
-
-      setBodyCharset(getParsedBodyCharset(getHeader("Content-Type")));
-      setBody(readBody(in));
-      parseBody();
+      setBodyRelatedFields(in);
     } catch (HttpError e) {
      setResponseStatusCode(e.getErrorCode());
     }
+  }
+
+  public void setBodyRelatedFields(InputStream in) throws IOException {
+    Charset charsetInHeaders = getParsedBodyCharset(getHeader("Content-Type"));
+    setBodyCharset(charsetInHeaders == null ? StandardCharsets.ISO_8859_1 : charsetInHeaders);
+    setBody(readBody(in));
+    parseBody();
   }
 
   public void parseBody() throws UnsupportedEncodingException {
