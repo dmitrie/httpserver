@@ -12,13 +12,13 @@ import static util.StringUtils.addPostfix;
 import static util.StringUtils.defaultString;
 
 public abstract class HttpMessage {
-  protected String httpVersion;
-  protected String startLine;
-  protected Map<String, String> headers = new LinkedCaseInsensitiveMap();
-  protected String body;
-  protected Charset bodyCharset = StandardCharsets.ISO_8859_1;
-  protected HttpStatusCode responseStatusCode;
-  protected ServerConfiguration serverConfiguration;
+  private String httpVersion;
+  private String startLine;
+  private Map<String, String> headers = new LinkedCaseInsensitiveMap();
+  private String body;
+  private Charset bodyCharset = StandardCharsets.ISO_8859_1;
+  private HttpStatusCode responseStatusCode;
+  private ServerConfiguration serverConfiguration;
 
   public String generateMessage() {
     String headersString = getHeaders().entrySet().stream()
@@ -89,5 +89,13 @@ public abstract class HttpMessage {
 
   public void setResponseStatusCode(HttpStatusCode responseStatusCode) {
     this.responseStatusCode = responseStatusCode;
+  }
+
+  protected ServerConfiguration getServerConfiguration() {
+    return serverConfiguration;
+  }
+
+  protected void setServerConfiguration(ServerConfiguration serverConfiguration) {
+    this.serverConfiguration = serverConfiguration;
   }
 }

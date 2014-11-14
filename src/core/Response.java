@@ -32,8 +32,12 @@ public class Response extends HttpMessage {
   public void finalizeResponse() {
     setStartLine(getHttpVersion() + " " + getResponseStatusCode());
 
-    if (getBody() != null)
+    if (getBody() == null)
+      getHeaders().remove("Content-Length");
+    else
       setHeader("Content-Length", getContentLength());
+
+    //TODO validate that there are no Content-* fields in response in case of empty body
 
     if ("HEAD".equals(requestMethod))
       setBody(null);

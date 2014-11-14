@@ -12,10 +12,10 @@ import static util.Helper.*;
 
 public class FileSystemHandler extends Handler {
 
-  private String documentRootPath;
+  private String documentRoot;
 
-  public FileSystemHandler(String documentRootPath) {
-    this.documentRootPath = documentRootPath;
+  public FileSystemHandler(String documentRoot) {
+    this.documentRoot = documentRoot;
   }
 
   @Override
@@ -23,10 +23,11 @@ public class FileSystemHandler extends Handler {
     if (response.getResponseStatusCode() != null)
       return;
 
-    String localPath = combinePaths(getDocumentRootPath(), request.getRequestURI().getPath());
+    String localPath = combinePaths(getDocumentRoot(), request.getRequestURI().getPath());
 
     switch (request.getMethod()) {
-      case "GET": case "HEAD":
+      case "GET":
+      case "HEAD":
         try {
           response.setBody(readFile(localPath, response.getBodyCharset()));
           response.setResponseStatusCode(OK);
@@ -36,17 +37,18 @@ public class FileSystemHandler extends Handler {
         }
         response.setHeader("Content-Type", "text/html; charset=" + response.getBodyCharset());
         response.setHeader("Last-modified", getServerTime());
+
+        if ("HEAD".equals(request.getMethod())) {
+          response.setHeader("Content-Length", response.getContentLength());
+          response.setBody(null);
+        }
         break;
       default:
         break;
     }
   }
 
-  public String getDocumentRootPath() {
-    return documentRootPath;
-  }
-
-  public void setDocumentRootPath(String documentRootPath) {
-    this.documentRootPath = documentRootPath;
+  public String getDocumentRoot() {
+    return documentRoot;
   }
 }

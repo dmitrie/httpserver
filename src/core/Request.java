@@ -21,11 +21,11 @@ public class Request extends IncomingHttpMessage {
   private Map<String, List<String>> parameters;
 
   public Request(ServerConfiguration serverConfiguration) {
-    this.serverConfiguration = serverConfiguration;
+    setServerConfiguration(serverConfiguration);
   }
 
   public Request(InputStream in, ServerConfiguration serverConfiguration) throws IOException {
-    this.serverConfiguration = serverConfiguration;
+    setServerConfiguration(serverConfiguration);
     try {
       String[] requestLineAndHeaders = readStartLineAndHeaders(in).split(CRLF,2);
 
@@ -103,7 +103,7 @@ public class Request extends IncomingHttpMessage {
     if (!validateMethod(method))
       throw new HttpError(BAD_REQUEST);
 
-    if (!serverConfiguration.getImplementedMethods().contains(method))
+    if (!getServerConfiguration().getImplementedMethods().contains(method))
       throw new HttpError(NOT_IMPLEMENTED);
 
     this.method = method;
@@ -163,10 +163,10 @@ public class Request extends IncomingHttpMessage {
     if (getHeader("HOST") == null && uri.charAt(0) == '/')
       throw new HttpError(BAD_REQUEST);
 
-    if (uri.length() > serverConfiguration.getMaximumURILength())
+    if (uri.length() > getServerConfiguration().getMaximumURILength())
       throw new HttpError(REQUEST_URI_TOO_LONG);
 
-    if (uri.indexOf("http")==0 && !serverConfiguration.isAbsoluteUriIsAllowed())
+    if (uri.indexOf("http")==0 && !getServerConfiguration().isAbsoluteUriIsAllowed())
       throw new HttpError(BAD_REQUEST);
 
     if(uri.equals("*") && !getMethod().equals("OPTIONS"))
