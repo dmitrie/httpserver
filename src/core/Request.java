@@ -1,7 +1,5 @@
 package core;
 
-import util.HttpError;
-
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
@@ -14,8 +12,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.regex.Pattern;
 
-import static util.HttpRequestRegEx.*;
-import static util.HttpStatusCode.*;
+import static core.HttpRequestRegEx.*;
+import static core.HttpStatusCode.*;
 
 public class Request extends IncomingHttpMessage {
   private String method;

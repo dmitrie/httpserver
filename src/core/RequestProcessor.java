@@ -1,7 +1,5 @@
 package core;
 
-import util.HttpStatusCode;
-
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -11,7 +9,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.Map;
 import java.util.regex.Pattern;
 
-import static util.HttpStatusCode.*;
+import static core.HttpStatusCode.*;
 
 public class RequestProcessor implements Runnable {
   private final Socket clientSocket;

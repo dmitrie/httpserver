@@ -6,9 +6,9 @@ import core.Response;
 
 import java.io.IOException;
 
+import static core.HttpStatusCode.NOT_FOUND;
+import static core.HttpStatusCode.OK;
 import static util.Helper.*;
-import static util.HttpStatusCode.NOT_FOUND;
-import static util.HttpStatusCode.OK;
 
 public class FileSystemHandler extends Handler {
 

@@ -1,14 +1,12 @@
 package core;
 
-import util.HttpError;
-
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 
-import static util.HttpRequestRegEx.*;
-import static util.HttpStatusCode.BAD_REQUEST;
-import static util.HttpStatusCode.HTTP_VERSION_NOT_SUPPORTED;
+import static core.HttpRequestRegEx.*;
+import static core.HttpStatusCode.BAD_REQUEST;
+import static core.HttpStatusCode.HTTP_VERSION_NOT_SUPPORTED;
 
 public class IncomingHttpMessage extends HttpMessage {
 

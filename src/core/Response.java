@@ -1,7 +1,5 @@
 package core;
 
-import util.HttpStatusCode;
-
 import static util.Helper.getServerTime;
 
 public class Response extends HttpMessage {

@@ -8,8 +8,8 @@ import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 
+import static core.HttpStatusCode.*;
 import static org.junit.Assert.assertEquals;
-import static util.HttpStatusCode.*;
 
 public class ResponseTest {
 

@@ -1,6 +1,5 @@
 package core;
 
-import util.HttpStatusCode;
 import util.LinkedCaseInsensitiveMap;
 
 import java.nio.charset.Charset;
@@ -8,7 +7,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-import static util.HttpRequestRegEx.CRLF;
+import static core.HttpRequestRegEx.CRLF;
 import static util.StringUtils.addPostfix;
 import static util.StringUtils.defaultString;
 

@@ -2,8 +2,8 @@ package core;
 
 import org.junit.Test;
 
+import static core.HttpRequestRegEx.*;
 import static org.junit.Assert.*;
-import static util.HttpRequestRegEx.*;
 
 public class HttpRequestRegExTest {
 
