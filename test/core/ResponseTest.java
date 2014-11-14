@@ -2,7 +2,7 @@ package core;
 
 import org.junit.Before;
 import org.junit.Test;
-import org.springframework.util.LinkedCaseInsensitiveMap;
+import util.LinkedCaseInsensitiveMap;
 
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
@@ -87,10 +87,7 @@ public class ResponseTest {
   @Test
   public void testHeaderNamesAreCaseInsensitive_RFC2616_4_2() throws Exception {
     Response response = new Response(new Request(serverConfiguration));
-
-    response.setHeaders(new LinkedCaseInsensitiveMap<String>(){{
-      put("Content-Type", "text/html");
-    }});
+    response.setHeaders(new LinkedCaseInsensitiveMap(){{ put("Content-Type", "text/html"); }});
 
     assertEquals("text/html", response.getHeader("CONTENT-Type"));
     response.setHeader("Content-TYPE", "text/css");

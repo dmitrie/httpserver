@@ -2,7 +2,7 @@ package core;
 
 import org.junit.Before;
 import org.junit.Test;
-import org.springframework.util.LinkedCaseInsensitiveMap;
+import util.LinkedCaseInsensitiveMap;
 
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
@@ -165,9 +165,7 @@ public class RequestTest {
   @Test
   public void testHeaderNamesAreCaseInsensitive_RFC2616_4_2() throws Exception {
     Request request = new Request(serverConfiguration);
-    request.setHeaders(new LinkedCaseInsensitiveMap<String>(){{
-      put("Cache-Control", "no-cache");
-    }});
+    request.setHeaders(new LinkedCaseInsensitiveMap() {{ put("Cache-Control", "no-cache"); }});
 
     assertEquals("no-cache", request.getHeader("CACHe-Control"));
     request.setHeader("CACHE-controL", "no-store");

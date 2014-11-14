@@ -1,6 +1,6 @@
 package core;
 
-import org.springframework.util.LinkedCaseInsensitiveMap;
+import util.LinkedCaseInsensitiveMap;
 
 import java.nio.charset.Charset;
 import java.util.Map;
@@ -11,7 +11,7 @@ import static core.HttpRequestRegEx.CRLF;
 public class HttpMessage {
   protected String protocol;
   protected String startLine;
-  protected Map<String, String> headers = new LinkedCaseInsensitiveMap<>();
+  protected Map<String, String> headers = new LinkedCaseInsensitiveMap();
   protected String body;
   protected Charset bodyCharset;
   protected HttpStatusCode responseStatusCode;

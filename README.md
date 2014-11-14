@@ -1,5 +1,18 @@
 TODO
 ====
-- File handler: add support for creating/updating/deleting files
-- Make use of charset passed inside http headers
-- Make UI test for Content-Length being larger than body length, must return Time-Out error
+    
+    
+    
+IDEA SHORTCUTS
+==============
+run CTRL+SHIFT+F10
+inline CTRL+ALT+N
+extract CTRL+ALT+? (M|V|P|F|C)
+last file CTRL+(SHIFT)+E
+
+override method CTRL+O
+show methods CTRL+F12
+select work CTRL+(SHIFT)+W
+rerun last CTRL+F5
+
+
