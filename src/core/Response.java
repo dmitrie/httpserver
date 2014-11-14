@@ -14,7 +14,7 @@ public class Response extends HttpMessage {
   }
 
   public void setRequestFieldsNeededInResponse(Request request) {
-    setProtocol(request.getProtocol() == null ? "HTTP/1.1" : request.getProtocol());
+    setHttpVersion(request.getHttpVersion() == null ? "HTTP/1.1" : request.getHttpVersion());
     this.requestMethod = request.getMethod();
   }
 
@@ -32,7 +32,7 @@ public class Response extends HttpMessage {
   }
 
   public void finalizeResponse() {
-    setStartLine(getProtocol() + " " + getResponseStatusCode());
+    setStartLine(getHttpVersion() + " " + getResponseStatusCode());
 
     if (getBody() != null)
       setHeader("Content-Length", getContentLength());

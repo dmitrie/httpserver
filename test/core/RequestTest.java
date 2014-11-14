@@ -48,7 +48,7 @@ public class RequestTest {
     Request request = new Request(in, serverConfiguration);
     assertEquals("GET", request.getMethod());
     assertEquals("http://google.com", request.getRequestURI().toString());
-    assertEquals("HTTP/1.1", request.getProtocol());
+    assertEquals("HTTP/1.1", request.getHttpVersion());
 
     assertEquals(requestString, request.generateMessage());
     assertEquals(null, request.getResponseStatusCode());
@@ -65,7 +65,7 @@ public class RequestTest {
     Request request = new Request(in, serverConfiguration);
     assertEquals("HEAD", request.getMethod());
     assertEquals("/test.html", request.getRequestURI().getPath());
-    assertEquals("HTTP/1.0", request.getProtocol());
+    assertEquals("HTTP/1.0", request.getHttpVersion());
     assertEquals("www.google.com", request.getHeader("HOST"));
     assertEquals("text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8", request.getHeader("ACCEPT"));
     assertEquals("no-store", request.getHeader("CACHE-CONTROL"));
@@ -85,7 +85,7 @@ public class RequestTest {
     Request request = new Request(in, serverConfiguration);
     assertEquals("POST", request.getMethod());
     assertEquals("/test", request.getRequestURI().getPath());
-    assertEquals("HTTP/1.0", request.getProtocol());
+    assertEquals("HTTP/1.0", request.getHttpVersion());
     assertEquals("24", request.getHeader("CONTENT-LENGTH"));
     assertEquals("\r\nSome  \r\n  body  here\r\n", request.getBody());
 
@@ -184,7 +184,7 @@ public class RequestTest {
     Request request = new Request(in, serverConfiguration);
     assertEquals("HEAD", request.getMethod());
     assertEquals("http://google.com/test.html", request.getRequestURI().toString());
-    assertEquals("HTTP/1.0", request.getProtocol());
+    assertEquals("HTTP/1.0", request.getHttpVersion());
     assertEquals("no-cache, no-store", request.getHeader("CACHE-CONTROL"));
 
     assertEquals("HEAD http://google.com/test.html HTTP/1.0\r\n" +
@@ -203,7 +203,7 @@ public class RequestTest {
     Request request = new Request(in, serverConfiguration);
     assertEquals("POST", request.getMethod());
     assertEquals("/test", request.getRequestURI().getPath());
-    assertEquals("HTTP/1.0", request.getProtocol());
+    assertEquals("HTTP/1.0", request.getHttpVersion());
     assertEquals("www.google.com", request.getHeader("host"));
     assertEquals("10", request.getHeader("CONTENT-LENGTH"));
     assertEquals("\r\nSome  \r\n", request.getBody());
@@ -226,7 +226,7 @@ public class RequestTest {
     Request request = new Request(in, serverConfiguration);
     assertEquals("POST", request.getMethod());
     assertEquals("/test", request.getRequestURI().getPath());
-    assertEquals("HTTP/1.0", request.getProtocol());
+    assertEquals("HTTP/1.0", request.getHttpVersion());
     assertEquals("0", request.getHeader("CONTENT-LENGTH"));
     assertEquals("", request.getBody());
 

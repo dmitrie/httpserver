@@ -61,14 +61,14 @@ public class IncomingHttpMessage extends HttpMessage {
   }
 
   @Override
-  public void setProtocol(String protocol) {
+  public void setHttpVersion(String protocol) {
     if (!validateProtocol(protocol))
       throw new HttpError(BAD_REQUEST);
 
     if (!serverConfiguration.getSupportedHttpVersions().contains(protocol))
       throw new HttpError(HTTP_VERSION_NOT_SUPPORTED);
 
-    super.setProtocol(protocol);
+    super.setHttpVersion(protocol);
   }
 
   @Override

@@ -85,11 +85,11 @@ public class Request extends IncomingHttpMessage {
 
     setMethod(splitRequestLine[0]);
     setRequestURI(splitRequestLine[1]);
-    setProtocol(splitRequestLine[2]);
+    setHttpVersion(splitRequestLine[2]);
 
     setStartLine(getMethod() + " " +
                  getParsedRequestURIAsRequested(splitRequestLine[1]) + " " +
-                 getProtocol());
+                 getHttpVersion());
   }
 
   public String getParsedRequestURIAsRequested(String rawURI) {

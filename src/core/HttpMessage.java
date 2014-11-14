@@ -9,9 +9,11 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 import static util.HttpRequestRegEx.CRLF;
+import static util.StringUtils.addPostfix;
+import static util.StringUtils.defaultString;
 
-public class HttpMessage {
-  protected String protocol;
+public abstract class HttpMessage {
+  protected String httpVersion;
   protected String startLine;
   protected Map<String, String> headers = new LinkedCaseInsensitiveMap();
   protected String body;
@@ -20,13 +22,14 @@ public class HttpMessage {
   protected ServerConfiguration serverConfiguration;
 
   public String generateMessage() {
-    String headersString = getHeaders().entrySet().stream().map((entry) -> entry.getKey() + ": " + entry.getValue()).collect(Collectors.joining(CRLF));
-    String message = "";
-    message = getStartLine() +
-      ("".equals(headersString) ? "" : CRLF + headersString) +
-      CRLF + CRLF +
-      (getBody() == null ? "" : getBody());
-    return message;
+    String headersString = getHeaders().entrySet().stream()
+      .map((entry) -> entry.getKey() + ": " + entry.getValue())
+      .collect(Collectors.joining(CRLF));
+
+    return startLine + CRLF +
+      addPostfix(headersString, CRLF) +
+      CRLF +
+      defaultString(body);
   }
 
   public String getContentLength() {
@@ -41,8 +44,8 @@ public class HttpMessage {
     getHeaders().put(header, value);
   }
 
-  public String getProtocol() {
-    return protocol;
+  public String getHttpVersion() {
+    return httpVersion;
   }
 
   public String getStartLine() {
@@ -65,8 +68,8 @@ public class HttpMessage {
     return responseStatusCode;
   }
 
-  public void setProtocol(String protocol) {
-    this.protocol = protocol;
+  public void setHttpVersion(String httpVersion) {
+    this.httpVersion = httpVersion;
   }
 
   public void setStartLine(String startLine) {

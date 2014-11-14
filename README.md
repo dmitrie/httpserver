@@ -16,5 +16,4 @@ override method CTRL+O
 show methods CTRL+F12
 select work CTRL+(SHIFT)+W
 rerun last CTRL+F5
-
-
+edit method signature CTRL+F6
