@@ -147,7 +147,7 @@ public class HttpRequestRegExTest {
     assertEquals("ISO-8859-4", getParsedBodyCharset("text/html; charset=ISO-8859-4").toString());
     assertEquals("ISO-8859-1", getParsedBodyCharset("text/html; charset=ISO-8859-4; charset=ISO-8859-1").toString());
     assertEquals("ISO-8859-4", getParsedBodyCharset("abc;charset=ISO-8859-4").toString());
-    assertEquals("ISO-8859-1", getParsedBodyCharset("foo bar").toString());
+    assertEquals(null, getParsedBodyCharset("foo bar"));
   }
 }
 
