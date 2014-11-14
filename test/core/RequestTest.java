@@ -487,7 +487,7 @@ public class RequestTest {
     request.setRequestLineMembers("GET /test?a HTTP/1.1");
 
     assertEquals("/test", request.getRequestURI().getPath());
-    assertEquals(null, request.getQueryParameters().get("a").get(0));
+    assertEquals(null, request.getParameters().get("a").get(0));
 
     assertEquals(null, request.getResponseStatusCode());
   }
@@ -499,13 +499,13 @@ public class RequestTest {
     request.setRequestLineMembers("GET /test?a&b=1&&c=&d=5&d&a=8&d=abc%20d HTTP/1.1");
 
     assertEquals("/test", request.getRequestURI().getPath());
-    assertEquals(null, request.getQueryParameters().get("a").get(0));
-    assertEquals("1", request.getQueryParameters().get("b").get(0));
-    assertEquals("", request.getQueryParameters().get("c").get(0));
-    assertEquals("5", request.getQueryParameters().get("d").get(0));
-    assertEquals(null, request.getQueryParameters().get("d").get(1));
-    assertEquals("8", request.getQueryParameters().get("a").get(1));
-    assertEquals("abc d", request.getQueryParameters().get("d").get(2));
+    assertEquals(null, request.getParameters().get("a").get(0));
+    assertEquals("1", request.getParameters().get("b").get(0));
+    assertEquals("", request.getParameters().get("c").get(0));
+    assertEquals("5", request.getParameters().get("d").get(0));
+    assertEquals(null, request.getParameters().get("d").get(1));
+    assertEquals("8", request.getParameters().get("a").get(1));
+    assertEquals("abc d", request.getParameters().get("d").get(2));
 
     assertEquals(null, request.getResponseStatusCode());
   }
@@ -521,13 +521,13 @@ public class RequestTest {
     Request request = new Request(in, serverConfiguration);
 
     assertEquals("/test", request.getRequestURI().getPath());
-    assertEquals(null, request.getQueryParameters().get("a").get(0));
-    assertEquals("1", request.getQueryParameters().get("b").get(0));
-    assertEquals("", request.getQueryParameters().get("c").get(0));
-    assertEquals("5", request.getQueryParameters().get("d").get(0));
-    assertEquals(null, request.getQueryParameters().get("d").get(1));
-    assertEquals("8 9", request.getQueryParameters().get("a").get(1));
-    assertEquals("abc d", request.getQueryParameters().get("d").get(2));
+    assertEquals(null, request.getParameters().get("a").get(0));
+    assertEquals("1", request.getParameters().get("b").get(0));
+    assertEquals("", request.getParameters().get("c").get(0));
+    assertEquals("5", request.getParameters().get("d").get(0));
+    assertEquals(null, request.getParameters().get("d").get(1));
+    assertEquals("8 9", request.getParameters().get("a").get(1));
+    assertEquals("abc d", request.getParameters().get("d").get(2));
     assertEquals("a&b=1&&c=&d=5&d&a=8+9&d=abc%20d", request.getBody());
 
     assertEquals(null, request.getResponseStatusCode());
@@ -542,7 +542,7 @@ public class RequestTest {
     InputStream in = new ByteArrayInputStream(requestString.getBytes());
     Request request = new Request(in, serverConfiguration);
 
-    assertEquals(null, request.getQueryParameters());
+    assertEquals(null, request.getParameters());
     assertEquals("a&b=1&&c=&d=5&d&a=8+9&d=abc%20d", request.getBody());
 
     assertEquals(null, request.getResponseStatusCode());
@@ -581,8 +581,8 @@ public class RequestTest {
     assertEquals("/test", request.getRequestURI().getPath());
     assertEquals("a=A&B&b=c&d=e", request.getRequestURI().getQuery());
     assertEquals("a=A%26B&b=c%26d%3De", request.getRequestURI().toURL().getQuery());
-    assertEquals("A&B", request.getQueryParameters().get("a").get(0));
-    assertEquals("c&d=e", request.getQueryParameters().get("b").get(0));
+    assertEquals("A&B", request.getParameters().get("a").get(0));
+    assertEquals("c&d=e", request.getParameters().get("b").get(0));
     assertEquals("http://www.google.com/test?a=A%26B&b=c%26d%3De", request.getRequestURI().toString());
 
     assertEquals(null, request.getResponseStatusCode());

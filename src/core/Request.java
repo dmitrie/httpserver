@@ -19,7 +19,7 @@ import static util.HttpStatusCode.*;
 public class Request extends IncomingHttpMessage {
   private String method;
   private URI requestURI;
-  private Map<String, List<String>> queryParameters;
+  private Map<String, List<String>> parameters;
 
   public Request(ServerConfiguration serverConfiguration) {
     this.serverConfiguration = serverConfiguration;
@@ -30,9 +30,8 @@ public class Request extends IncomingHttpMessage {
     try {
       String[] requestLineAndHeaders = readStartLineAndHeaders(in).split(CRLF,2);
 
-      if (requestLineAndHeaders.length == 2) {
+      if (requestLineAndHeaders.length == 2)
         parseAndSetHeaders(requestLineAndHeaders[1]);
-      }
 
       if (getHeader("TRANSFER-ENCODING") != null)
         throw new HttpError(NOT_IMPLEMENTED);
@@ -42,10 +41,6 @@ public class Request extends IncomingHttpMessage {
       setBodyCharset(getParsedBodyCharset(getHeader("Content-Type")));
       setBody(readBody(in));
       parseBody();
-
-      if (getBody() != null && !getHeader("Content-Length").equals(getContentLength()))
-         throw new HttpError(BAD_REQUEST);
-
     } catch (HttpError e) {
      setResponseStatusCode(e.getErrorCode());
     }
@@ -54,13 +49,19 @@ public class Request extends IncomingHttpMessage {
   public void parseBody() throws UnsupportedEncodingException {
     validateContentHeaders();
 
+    if (getBody() == null)
+      return;
+
+    if (!getHeader("Content-Length").equals(getContentLength()))
+      throw new HttpError(BAD_REQUEST);
+
     String contentType = getHeader("Content-Type");
     if (contentType != null) {
       if (contentType.matches(".*multipart/form-data.*"))
         throw new HttpError(NOT_IMPLEMENTED);
 
       if (contentType.matches(".*application/x-www-form-urlencoded.*"))
-        parseAndSetQueryParameters(getBody());
+        parseParameters(getBody());
     }
   }
 
@@ -113,36 +114,42 @@ public class Request extends IncomingHttpMessage {
         this.requestURI = null;
       } else {
         URI uri = new URI((getHeader("HOST") == null? "" : "http://" + getHeader("HOST")) + uriString);
-        setQueryParameters(uri);
+        setParameters(uri);
         this.requestURI = uri;
       }
     } catch (MalformedURLException | URISyntaxException e) {
       throw new HttpError(BAD_REQUEST);
-    } catch (UnsupportedEncodingException e) {
-      throw new RuntimeException(e.getMessage());
     }
   }
 
-  public void setQueryParameters(URI uri) throws UnsupportedEncodingException, MalformedURLException {
+  public void setParameters(URI uri) throws MalformedURLException {
     URL url = uri.toURL();
     if (url.getQuery() != null)
-      parseAndSetQueryParameters(url.getQuery());
+      parseParameters(url.getQuery());
   }
 
-  public void parseAndSetQueryParameters(String parameters) throws UnsupportedEncodingException {
+  public void parseParameters(String parameters) {
     setQueryParameters(new LinkedHashMap<>());
     String[] splitParameters = parameters.split("&");
     for (String parameter : splitParameters) {
       String[] splitParameter = parameter.split("=", 2);
+      decodeAndSetParameterKeyValuePairs(splitParameter);
+    }
+  }
 
+  public void decodeAndSetParameterKeyValuePairs(String[] splitParameter) {
+    try {
       String key = URLDecoder.decode(splitParameter[0], StandardCharsets.UTF_8.name());
-      List<String> value = queryParameters.getOrDefault(key, new LinkedList<>());
+      List<String> value = this.parameters.getOrDefault(key, new LinkedList<>());
+
       if (splitParameter.length == 2)
         value.add(URLDecoder.decode(splitParameter[1], StandardCharsets.UTF_8.name()));
       else
         value.add(null);
 
-      queryParameters.put(key, value);
+      this.parameters.put(key, value);
+    } catch (UnsupportedEncodingException e) {
+      throw new RuntimeException(e.getMessage());
     }
   }
 
@@ -171,8 +178,8 @@ public class Request extends IncomingHttpMessage {
     return requestURI;
   }
 
-  public Map<String, List<String>> getQueryParameters() {
-    return queryParameters;
+  public Map<String, List<String>> getParameters() {
+    return parameters;
   }
 
   public void setRequestURI(URI requestURI) {
@@ -180,6 +187,6 @@ public class Request extends IncomingHttpMessage {
   }
 
   public void setQueryParameters(Map<String, List<String>> queryParameters) {
-    this.queryParameters = queryParameters;
+    this.parameters = queryParameters;
   }
 }

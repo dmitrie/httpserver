@@ -41,7 +41,11 @@ public class IncomingHttpMessage extends HttpMessage {
     int numericContentLength = parseContentLengthHeader(contentLength);
     if (numericContentLength == 0)
       return "";
+    else
+      return readExactNumberOfBytes(in, numericContentLength);
+  }
 
+  public String readExactNumberOfBytes(InputStream in, int numericContentLength) throws IOException {
     byte[] buffer = new byte[numericContentLength];
     int bytesActuallyRead = in.read(buffer, 0, numericContentLength);
     return new String(buffer, 0, bytesActuallyRead, getBodyCharset());
