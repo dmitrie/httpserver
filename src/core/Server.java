@@ -23,8 +23,7 @@ public class Server {
   }
 
   public Server() throws IOException {
-    this.serverConfiguration = new ServerConfiguration();
-    this.serverSocket = new ServerSocket(serverConfiguration.getPortNumber());
+    this(new ServerConfiguration());
   }
 
   public static void main(String[] args) throws IOException {
