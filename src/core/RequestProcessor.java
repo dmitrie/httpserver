@@ -62,7 +62,7 @@ public class RequestProcessor implements Runnable {
           entry.getValue().handle(request, response);
 
     if (response.getResponseStatusCode() == null)
-      response.setStandardResponse(FORBIDDEN);
+      response.setStandardResponse(NOT_FOUND);
   }
 
   public void respondWithError(OutputStream out, Request request, HttpStatusCode code) throws IOException {
