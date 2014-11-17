@@ -10,7 +10,6 @@ import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.regex.Pattern;
 
 import static core.HttpRequestRegEx.*;
 import static core.HttpStatusCode.*;
@@ -66,13 +65,6 @@ public class Request extends IncomingHttpMessage {
       if (contentType.matches(".*application/x-www-form-urlencoded.*"))
         parseParameters(getBody());
     }
-  }
-
-  public void validateContentHeaders() {
-    if (getBody() == null)
-      for(String key : getHeaders().keySet())
-        if (Pattern.compile("Content-.*", Pattern.CASE_INSENSITIVE).matcher(key).matches())
-          throw new HttpError(BAD_REQUEST);
   }
 
   public void setRequestLineMembers(String requestLine) {

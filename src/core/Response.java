@@ -1,5 +1,6 @@
 package core;
 
+import static core.HttpStatusCode.INTERNAL_SERVER_ERROR;
 import static util.Helper.getServerTime;
 
 public class Response extends HttpMessage {
@@ -37,9 +38,13 @@ public class Response extends HttpMessage {
     else
       setHeader("Content-Length", getContentLength());
 
-    //TODO validate that there are no Content-* fields in response in case of empty body
-
     if ("HEAD".equals(requestMethod))
       setBody(null);
+    else
+      try {
+        validateContentHeaders();
+      } catch (HttpError e) {
+        setStandardResponse(INTERNAL_SERVER_ERROR);
+      }
   }
 }

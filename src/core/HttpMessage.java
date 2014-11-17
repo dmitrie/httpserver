@@ -5,9 +5,11 @@ import util.LinkedCaseInsensitiveMap;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.Map;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import static core.HttpRequestRegEx.CRLF;
+import static core.HttpStatusCode.BAD_REQUEST;
 import static util.StringUtils.addPostfix;
 import static util.StringUtils.defaultString;
 
@@ -41,6 +43,13 @@ public abstract class HttpMessage {
 
   public void setHeader(String header, String value) {
     getHeaders().put(header, value);
+  }
+
+  public void validateContentHeaders() {
+    if (getBody() == null)
+      for(String key : getHeaders().keySet())
+        if (Pattern.compile("Content-.*", Pattern.CASE_INSENSITIVE).matcher(key).matches())
+          throw new HttpError(BAD_REQUEST);
   }
 
   public String getHttpVersion() {
