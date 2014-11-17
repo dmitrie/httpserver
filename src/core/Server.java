@@ -17,23 +17,23 @@ public class Server {
   private ServerSocket serverSocket;
   public Map<Pattern, Handler> handlers = new LinkedHashMap<>();
 
-  public Server(ServerConfiguration serverConfiguration) throws IOException {
-    this.serverConfiguration = serverConfiguration;
-    this.serverSocket = new ServerSocket(serverConfiguration.getPortNumber());
+  public Server() {
+    this(new ServerConfiguration());
   }
 
-  public Server() throws IOException {
-    this(new ServerConfiguration());
+  public Server(ServerConfiguration serverConfiguration) {
+    this.serverConfiguration = serverConfiguration;
   }
 
   public static void main(String[] args) throws IOException {
     Server server = new Server();
-    server.setHandler(".*", new FileSystemHandler("/home/kool/IdeaProjects/httpserver/test/web/"));
+    server.setHandler(".*", new FileSystemHandler(args[0]));
     server.start();
   }
 
-  public void start() {
+  public void start() throws IOException {
     serverIsRunning = true;
+    serverSocket = new ServerSocket(serverConfiguration.getPortNumber());
     ExecutorService executor = Executors.newFixedThreadPool(serverConfiguration.getNumberOfThreads());
 
     while(serverIsRunning) {
