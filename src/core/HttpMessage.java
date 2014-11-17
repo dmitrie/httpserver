@@ -20,7 +20,7 @@ public abstract class HttpMessage {
   private String body;
   private Charset bodyCharset = StandardCharsets.ISO_8859_1;
   private HttpStatusCode responseStatusCode;
-  private ServerConfiguration serverConfiguration;
+  private Configuration configuration;
 
   public String generateMessage() {
     String headersString = getHeaders().entrySet().stream()
@@ -100,11 +100,11 @@ public abstract class HttpMessage {
     this.responseStatusCode = responseStatusCode;
   }
 
-  protected ServerConfiguration getServerConfiguration() {
-    return serverConfiguration;
+  protected Configuration getConfiguration() {
+    return configuration;
   }
 
-  protected void setServerConfiguration(ServerConfiguration serverConfiguration) {
-    this.serverConfiguration = serverConfiguration;
+  protected void setConfiguration(Configuration configuration) {
+    this.configuration = configuration;
   }
 }

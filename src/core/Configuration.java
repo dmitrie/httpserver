@@ -3,7 +3,7 @@ package core;
 import java.util.ArrayList;
 import java.util.List;
 
-public class ServerConfiguration {
+public class Configuration {
   private int maximumURILength = 8190;
   private int requestTimeOut = 5000;
   private int portNumber = 8080;

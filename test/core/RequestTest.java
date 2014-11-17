@@ -13,11 +13,11 @@ import static org.junit.Assert.*;
 
 public class RequestTest {
 
-  ServerConfiguration serverConfiguration = new ServerConfiguration();
+  Configuration configuration = new Configuration();
 
   @Before
   public void setUp() throws Exception {
-    serverConfiguration.setAbsoluteUriIsAllowed(true);
+    configuration.setAbsoluteUriIsAllowed(true);
   }
 
   @Test
@@ -26,7 +26,7 @@ public class RequestTest {
                            "Cache-Control: no-cache\n\n";
     InputStream in = new ByteArrayInputStream(requestString.getBytes());
 
-    Request request = new Request(in, serverConfiguration);
+    Request request = new Request(in, configuration);
     assertEquals(BAD_REQUEST, request.getResponseStatusCode());
   }
 
@@ -35,7 +35,7 @@ public class RequestTest {
     String requestString = "GET / HTTP1.0\r\nHost: www.google.com\r\n\r\n";
     InputStream in = new ByteArrayInputStream(requestString.getBytes());
 
-    Request request = new Request(in, serverConfiguration);
+    Request request = new Request(in, configuration);
     assertEquals(BAD_REQUEST, request.getResponseStatusCode());
   }
 
@@ -44,7 +44,7 @@ public class RequestTest {
     String requestString = "GET http://google.com HTTP/1.1\r\n\r\n";
     InputStream in = new ByteArrayInputStream(requestString.getBytes());
 
-    Request request = new Request(in, serverConfiguration);
+    Request request = new Request(in, configuration);
     assertEquals("GET", request.getMethod());
     assertEquals("http://google.com", request.getRequestURI().toString());
     assertEquals("HTTP/1.1", request.getHttpVersion());
@@ -61,7 +61,7 @@ public class RequestTest {
                            "Cache-Control: no-store\r\n\r\n";
     InputStream in = new ByteArrayInputStream(requestString.getBytes());
 
-    Request request = new Request(in, serverConfiguration);
+    Request request = new Request(in, configuration);
     assertEquals("HEAD", request.getMethod());
     assertEquals("/test.html", request.getRequestURI().getPath());
     assertEquals("HTTP/1.0", request.getHttpVersion());
@@ -81,7 +81,7 @@ public class RequestTest {
                            "\r\nSome  \r\n  body  here\r\n";
     InputStream in = new ByteArrayInputStream(requestString.getBytes());
 
-    Request request = new Request(in, serverConfiguration);
+    Request request = new Request(in, configuration);
     assertEquals("POST", request.getMethod());
     assertEquals("/test", request.getRequestURI().getPath());
     assertEquals("HTTP/1.0", request.getHttpVersion());
@@ -97,7 +97,7 @@ public class RequestTest {
     String requestString = "\r\n\r\nGET http://www.google.com HTTP/1.1\r\n\r\n";
     InputStream in = new ByteArrayInputStream(requestString.getBytes());
 
-    Request request = new Request(in, serverConfiguration);
+    Request request = new Request(in, configuration);
     assertEquals("GET", request.getMethod());
     assertEquals(null, request.getResponseStatusCode());
   }
@@ -112,7 +112,7 @@ public class RequestTest {
                            "abcde";
     InputStream in = new ByteArrayInputStream(requestString.getBytes());
 
-    Request request = new Request(in, serverConfiguration);
+    Request request = new Request(in, configuration);
     assertEquals("no-cache", request.getHeader("CACHE-CONTROL"));
     assertEquals("5", request.getHeader("Content-Length"));
     assertEquals(null, request.getHeader("ACCEPT-ENCODING"));
@@ -126,7 +126,7 @@ public class RequestTest {
                            "Cache-Control: \r\n\t   \r\n\t n o \r\n -cac\t\the\r\n\r\n";
     InputStream in = new ByteArrayInputStream(requestString.getBytes());
 
-    Request request = new Request(in, serverConfiguration);
+    Request request = new Request(in, configuration);
     assertEquals("n o -cac he", request.getHeader("CACHE-CONTROL"));
     assertEquals(null, request.getResponseStatusCode());
   }
@@ -137,7 +137,7 @@ public class RequestTest {
                            "Cache- Control: test";
     InputStream in = new ByteArrayInputStream(requestString.getBytes());
 
-    Request request = new Request(in, serverConfiguration);
+    Request request = new Request(in, configuration);
     assertEquals(BAD_REQUEST, request.getResponseStatusCode());
   }
 
@@ -147,7 +147,7 @@ public class RequestTest {
                            "Cache-Control no-cache\r\n\r\n";
     InputStream in = new ByteArrayInputStream(requestString.getBytes());
 
-    Request request = new Request(in, serverConfiguration);
+    Request request = new Request(in, configuration);
     assertEquals(BAD_REQUEST, request.getResponseStatusCode());
   }
 
@@ -157,14 +157,14 @@ public class RequestTest {
                            "Host: \r\n\t   www.google.com \r\n \r\n\t  \t\r\n\r\n";
     InputStream in = new ByteArrayInputStream(requestString.getBytes());
 
-    Request request = new Request(in, serverConfiguration);
+    Request request = new Request(in, configuration);
     assertEquals("www.google.com", request.getHeader("HOST"));
     assertEquals(null, request.getResponseStatusCode());
   }
 
   @Test
   public void testHeaderNamesAreCaseInsensitive_RFC2616_4_2() throws Exception {
-    Request request = new Request(serverConfiguration);
+    Request request = new Request(configuration);
     request.setHeaders(new LinkedCaseInsensitiveMap() {{ put("Cache-Control", "no-cache"); }});
 
     assertEquals("no-cache", request.getHeader("CACHe-Control"));
@@ -180,7 +180,7 @@ public class RequestTest {
                            "Cache-Control: no-store\r\n\r\n";
     InputStream in = new ByteArrayInputStream(requestString.getBytes());
 
-    Request request = new Request(in, serverConfiguration);
+    Request request = new Request(in, configuration);
     assertEquals("HEAD", request.getMethod());
     assertEquals("http://google.com/test.html", request.getRequestURI().toString());
     assertEquals("HTTP/1.0", request.getHttpVersion());
@@ -199,7 +199,7 @@ public class RequestTest {
                            "\r\nSome  \r\n  body  here\r\n";
     InputStream in = new ByteArrayInputStream(requestString.getBytes());
 
-    Request request = new Request(in, serverConfiguration);
+    Request request = new Request(in, configuration);
     assertEquals("POST", request.getMethod());
     assertEquals("/test", request.getRequestURI().getPath());
     assertEquals("HTTP/1.0", request.getHttpVersion());
@@ -222,7 +222,7 @@ public class RequestTest {
                            "\r\nSome  \r\n  body  here\r\n";
     InputStream in = new ByteArrayInputStream(requestString.getBytes());
 
-    Request request = new Request(in, serverConfiguration);
+    Request request = new Request(in, configuration);
     assertEquals("POST", request.getMethod());
     assertEquals("/test", request.getRequestURI().getPath());
     assertEquals("HTTP/1.0", request.getHttpVersion());
@@ -243,7 +243,7 @@ public class RequestTest {
       "\r\nSome  \r\n  body  here\r\n";
     InputStream in = new ByteArrayInputStream(requestString.getBytes());
 
-    Request request = new Request(in, serverConfiguration);
+    Request request = new Request(in, configuration);
     assertEquals(BAD_REQUEST, request.getResponseStatusCode());
   }
 
@@ -255,7 +255,7 @@ public class RequestTest {
       "\r\nSome  \r\n  body  here\r\n";
     InputStream in = new ByteArrayInputStream(requestString.getBytes());
 
-    Request request = new Request(in, serverConfiguration);
+    Request request = new Request(in, configuration);
     assertEquals(BAD_REQUEST, request.getResponseStatusCode());
   }
 
@@ -264,7 +264,7 @@ public class RequestTest {
     String requestString = "GET /some file name with spaces.html HTTP/1.1\r\n\r\n";
     InputStream in = new ByteArrayInputStream(requestString.getBytes());
 
-    Request request = new Request(in, serverConfiguration);
+    Request request = new Request(in, configuration);
     assertEquals(BAD_REQUEST, request.getResponseStatusCode());
   }
 
@@ -273,7 +273,7 @@ public class RequestTest {
     String requestString = "GE/T /test HTTP/1.0\r\n\r\n";
     InputStream in = new ByteArrayInputStream(requestString.getBytes());
 
-    Request request = new Request(in, serverConfiguration);
+    Request request = new Request(in, configuration);
     assertEquals(BAD_REQUEST, request.getResponseStatusCode());
   }
 
@@ -282,7 +282,7 @@ public class RequestTest {
     String requestString = "DELETE /test HTTP/1.0\r\n\r\n";
     InputStream in = new ByteArrayInputStream(requestString.getBytes());
 
-    Request request = new Request(in, serverConfiguration);
+    Request request = new Request(in, configuration);
     assertEquals(NOT_IMPLEMENTED, request.getResponseStatusCode());
   }
 
@@ -291,7 +291,7 @@ public class RequestTest {
     String requestString = "OTHER_METHOD /test HTTP/1.0\r\n\r\n";
     InputStream in = new ByteArrayInputStream(requestString.getBytes());
 
-    Request request = new Request(in, serverConfiguration);
+    Request request = new Request(in, configuration);
     assertEquals(NOT_IMPLEMENTED, request.getResponseStatusCode());
   }
 
@@ -300,7 +300,7 @@ public class RequestTest {
     String requestString = "GET / HTTP/1.1\r\n\r\n";
     InputStream in = new ByteArrayInputStream(requestString.getBytes());
 
-    Request request = new Request(in, serverConfiguration);
+    Request request = new Request(in, configuration);
 
     assertEquals(BAD_REQUEST, request.getResponseStatusCode());
   }
@@ -310,7 +310,7 @@ public class RequestTest {
     String requestString = "GET http://google.com/ HTTP/0.9\r\n\r\n";
     InputStream in = new ByteArrayInputStream(requestString.getBytes());
 
-    Request request = new Request(in, serverConfiguration);
+    Request request = new Request(in, configuration);
     assertEquals(HTTP_VERSION_NOT_SUPPORTED, request.getResponseStatusCode());
   }
 
@@ -320,13 +320,13 @@ public class RequestTest {
                            "Transfer-Encoding: foo\r\n\r\n";
     InputStream in = new ByteArrayInputStream(requestString.getBytes());
 
-    Request request = new Request(in, serverConfiguration);
+    Request request = new Request(in, configuration);
     assertEquals(NOT_IMPLEMENTED, request.getResponseStatusCode());
   }
 
   @Test
   public void testHeaderNamesCaseIsPreserved() throws Exception {
-    Request request = new Request(serverConfiguration);
+    Request request = new Request(configuration);
     request.setHeader("Cache-Control", "no-cache");
     assertEquals("Cache-Control", request.getHeaders().keySet().iterator().next());
     assertEquals(null, request.getResponseStatusCode());
@@ -334,7 +334,7 @@ public class RequestTest {
 
   @Test
   public void testSetRequestLineMembersAsteriskRequestURICorrectMethod_RFC2616_5_1_2() throws Exception {
-    ServerConfiguration config = new ServerConfiguration();
+    Configuration config = new Configuration();
     config.getImplementedMethods().add("OPTIONS");
 
     Request request = new Request(config);
@@ -348,7 +348,7 @@ public class RequestTest {
 
   @Test
   public void testSetRequestLineMembersAsteriskRequestURIWrongMethod_RFC2616_5_1_2() throws Exception {
-    Request request = new Request(serverConfiguration);
+    Request request = new Request(configuration);
     try {
       request.setRequestLineMembers("GET * HTTP/1.1");
       fail();
@@ -359,7 +359,7 @@ public class RequestTest {
 
   @Test
   public void testSetRequestLineMembersRelativeRequestURI_RFC2616_5_1_2() throws Exception {
-    Request request = new Request(serverConfiguration);
+    Request request = new Request(configuration);
     request.setHeader("Host", "www.google.com");
     request.setRequestLineMembers("GET /test.html HTTP/1.1");
     assertEquals("http://www.google.com/test.html", request.getRequestURI().toString());
@@ -369,7 +369,7 @@ public class RequestTest {
 
   @Test
   public void testSetRequestLineMembersAbsoluteRequestURI_RFC2616_5_1_2() throws Exception {
-    Request request = new Request(serverConfiguration);
+    Request request = new Request(configuration);
     request.setRequestLineMembers("GET http://google.com/test.html HTTP/1.1");
     assertEquals("http://google.com/test.html", request.getRequestURI().toString());
 
@@ -378,7 +378,7 @@ public class RequestTest {
 
   @Test
   public void testSetRequestURITooLongURI_RFC2616_10_4_15() throws Exception {
-    ServerConfiguration config = new ServerConfiguration();
+    Configuration config = new Configuration();
     config.setMaximumURILength(10);
     Request request = new Request(config);
 
@@ -396,7 +396,7 @@ public class RequestTest {
 
   @Test
   public void testSetRequestURInvalidHost() throws Exception {
-    Request request = new Request(serverConfiguration);
+    Request request = new Request(configuration);
     request.setHeader("Host", "#$%&");
 
     try {
@@ -409,7 +409,7 @@ public class RequestTest {
 
   @Test
   public void testSetRequestURIInvalidAbsPath() throws Exception {
-    Request request = new Request(serverConfiguration);
+    Request request = new Request(configuration);
     request.setHeader("Host", "www.google.com");
 
     try {
@@ -422,7 +422,7 @@ public class RequestTest {
 
   @Test
   public void testSetRequestURIAbsoluteUriIsNotAllowed() throws Exception {
-    ServerConfiguration config = new ServerConfiguration();
+    Configuration config = new Configuration();
     Request request = new Request(config);
 
     config.setAbsoluteUriIsAllowed(true);
@@ -440,7 +440,7 @@ public class RequestTest {
 
   @Test
   public void testSetRequestURIRelativeURIContainsPort() throws Exception {
-    Request request = new Request(serverConfiguration);
+    Request request = new Request(configuration);
     request.setHeader("host", "www.google.com:8888");
     request.setRequestLineMembers("GET / HTTP/1.1");
 
@@ -454,7 +454,7 @@ public class RequestTest {
 
   @Test
   public void testSetRequestURIAbsoluteURIContainsPort() throws Exception {
-    Request request = new Request(serverConfiguration);
+    Request request = new Request(configuration);
     request.setRequestLineMembers("GET http://www.google.com:8888/ HTTP/1.1");
 
     assertEquals("www.google.com", request.getRequestURI().getHost());
@@ -467,7 +467,7 @@ public class RequestTest {
 
   @Test
   public void testSetRequestURIContainsFragment() throws Exception {
-    Request request = new Request(serverConfiguration);
+    Request request = new Request(configuration);
     request.setHeader("host", "www.google.com");
     request.setRequestLineMembers("GET /?a=b#abc HTTP/1.1");
 
@@ -481,7 +481,7 @@ public class RequestTest {
 
   @Test
   public void testSetRequestSingleParameterIsCorrectlyParsed() throws Exception {
-    Request request = new Request(serverConfiguration);
+    Request request = new Request(configuration);
     request.setHeader("host", "www.google.com");
     request.setRequestLineMembers("GET /test?a HTTP/1.1");
 
@@ -493,7 +493,7 @@ public class RequestTest {
 
   @Test
   public void testSetRequestQueryIsCorrectlyParsed() throws Exception {
-    Request request = new Request(serverConfiguration);
+    Request request = new Request(configuration);
     request.setHeader("host", "www.google.com");
     request.setRequestLineMembers("GET /test?a&b=1&&c=&d=5&d&a=8&d=abc%20d HTTP/1.1");
 
@@ -517,7 +517,7 @@ public class RequestTest {
       "Content-Length: 31\r\n\r\n" +
       "a&b=1&&c=&d=5&d&a=8+9&d=abc%20d";
     InputStream in = new ByteArrayInputStream(requestString.getBytes());
-    Request request = new Request(in, serverConfiguration);
+    Request request = new Request(in, configuration);
 
     assertEquals("/test", request.getRequestURI().getPath());
     assertEquals(null, request.getParameters().get("a").get(0));
@@ -539,7 +539,7 @@ public class RequestTest {
       "Content-Length: 31\r\n\r\n" +
       "a&b=1&&c=&d=5&d&a=8+9&d=abc%20d";
     InputStream in = new ByteArrayInputStream(requestString.getBytes());
-    Request request = new Request(in, serverConfiguration);
+    Request request = new Request(in, configuration);
 
     assertEquals(null, request.getParameters());
     assertEquals("a&b=1&&c=&d=5&d&a=8+9&d=abc%20d", request.getBody());
@@ -555,7 +555,7 @@ public class RequestTest {
       "Content-Type: multipart/form-data\r\n\r\n" +
       "a&b=1&&c=&d=5&d&a=8+9&d=abc%20d";
     InputStream in = new ByteArrayInputStream(requestString.getBytes());
-    Request request = new Request(in, serverConfiguration);
+    Request request = new Request(in, configuration);
 
     assertEquals(NOT_IMPLEMENTED, request.getResponseStatusCode());
   }
@@ -566,14 +566,14 @@ public class RequestTest {
       "Host: www.google.com\r\n" +
       "Content-whatever: foo bar\r\n\r\n";
     InputStream in = new ByteArrayInputStream(requestString.getBytes());
-    Request request = new Request(in, serverConfiguration);
+    Request request = new Request(in, configuration);
 
     assertEquals(BAD_REQUEST, request.getResponseStatusCode());
   }
 
   @Test
   public void testSetRequestQueryContainsEncodedDelimiters() throws Exception {
-    Request request = new Request(serverConfiguration);
+    Request request = new Request(configuration);
     request.setHeader("host", "www.google.com");
     request.setRequestLineMembers("GET /test?a=A%26B&b=c%26d%3De HTTP/1.1");
 
@@ -594,7 +594,7 @@ public class RequestTest {
       "Non-ASCII-header: a\u00C8b\r\n\r\n";
     InputStream in = new ByteArrayInputStream(requestString.getBytes(StandardCharsets.ISO_8859_1));
 
-    Request request = new Request(in, serverConfiguration);
+    Request request = new Request(in, configuration);
     assertEquals("a\u00C8b", request.getHeader("Non-ASCII-header"));
     assertEquals(null, request.getResponseStatusCode());
   }
@@ -606,7 +606,7 @@ public class RequestTest {
       "Non-ASCII-header: a\u00C8b\r\n\r\n";
     InputStream in = new ByteArrayInputStream(requestString.getBytes());
 
-    Request request = new Request(in, serverConfiguration);
+    Request request = new Request(in, configuration);
     assertNotEquals("a\u00C8b", request.getHeader("Non-ASCII-header"));
     assertEquals(null, request.getResponseStatusCode());
   }
@@ -622,7 +622,7 @@ public class RequestTest {
       "body\u00C8".getBytes(StandardCharsets.UTF_16)
     ));
 
-    Request request = new Request(in, serverConfiguration);
+    Request request = new Request(in, configuration);
     assertEquals("body\u00C8", request.getBody());
     assertEquals(null, request.getResponseStatusCode());
   }
@@ -637,7 +637,7 @@ public class RequestTest {
       "body\u00C8".getBytes(StandardCharsets.ISO_8859_1)
     ));
 
-    Request request = new Request(in, serverConfiguration);
+    Request request = new Request(in, configuration);
     assertEquals("body\u00C8", request.getBody());
     assertEquals(null, request.getResponseStatusCode());
   }

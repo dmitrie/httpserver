@@ -11,6 +11,7 @@ import java.io.PrintWriter;
 import java.net.Socket;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.function.BooleanSupplier;
 import java.util.regex.Pattern;
 
 import static core.HttpRequestRegEx.CRLF;
@@ -23,31 +24,34 @@ public class ServerTest {
 
   @Before
   public void setUp() throws Exception {
-    int numberOfAttempts = 5;
-    do {
-      try {
-        server = new Server(getConfiguration());
-        server.setHandler(".*", new FileSystemHandler("/home/kool/IdeaProjects/httpserver/test/web/"));
-        serverThread = new Thread(server::start);
-        serverThread.start();
-        return;
-      } catch (Exception e) {
-        Thread.sleep(500);
-      }
-    } while (numberOfAttempts-- > 0);
+    server = new Server(getConfiguration());
+    server.setHandler(".*", new FileSystemHandler("/home/kool/IdeaProjects/httpserver/test/web/"));
+    serverThread = new Thread(server::start);
+    serverThread.start();
+    awaitCondition(15000, () -> server.isRunning());
   }
 
   @After
   public void tearDown() throws Exception {
     server.stop();
+    while (server.isRunning()) { Thread.sleep(100); }
     serverThread.interrupt();
   }
 
-  private ServerConfiguration getConfiguration() {
-    ServerConfiguration serverConfiguration = new ServerConfiguration();
-    serverConfiguration.setPortNumber(8361);
-    serverConfiguration.setRequestTimeOut(500);
-    return serverConfiguration;
+  private boolean awaitCondition(long milliseconds, BooleanSupplier condition) {
+    long endTime = System.currentTimeMillis() + milliseconds;
+    while(System.currentTimeMillis() < endTime) {
+      if (condition.getAsBoolean())
+        return true;
+    }
+    return false;
+  }
+
+  private Configuration getConfiguration() {
+    Configuration configuration = new Configuration();
+    configuration.setPortNumber(8361);
+    configuration.setRequestTimeOut(500);
+    return configuration;
   }
 
   public IncomingHttpMessage sendRequest(String request) throws IOException {
@@ -116,9 +120,9 @@ public class ServerTest {
 
   @Test
   public void testMultipleHandlers() throws Exception {
-    Map<Pattern, Handler> originalServerHandlers = server.getHandlers();
+    Map<Pattern, Handler> originalServerHandlers = server.handlers;
     try {
-      server.setHandlers(new LinkedHashMap<>());
+      server.handlers = new LinkedHashMap<>();
       server.setHandler(".*", new HandlerOK());
       server.setHandler("/abc/.*", new HandlerNotFound());
 
@@ -130,7 +134,7 @@ public class ServerTest {
       assertEquals("HTTP/1.1 " + NOT_FOUND, responseTwoHandlers.getStartLine());
       assertEquals("foobar", responseTwoHandlers.getBody());
     } finally {
-      server.setHandlers(originalServerHandlers);
+      server.handlers = originalServerHandlers;
     }
   }
 

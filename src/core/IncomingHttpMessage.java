@@ -63,7 +63,7 @@ public class IncomingHttpMessage extends HttpMessage {
     if (!validateProtocol(protocol))
       throw new HttpError(BAD_REQUEST);
 
-    if (!getServerConfiguration().getSupportedHttpVersions().contains(protocol))
+    if (!getConfiguration().getSupportedHttpVersions().contains(protocol))
       throw new HttpError(HTTP_VERSION_NOT_SUPPORTED);
 
     super.setHttpVersion(protocol);

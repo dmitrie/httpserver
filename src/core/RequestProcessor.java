@@ -13,12 +13,12 @@ import static core.HttpStatusCode.*;
 
 public class RequestProcessor implements Runnable {
   private final Socket clientSocket;
-  private ServerConfiguration serverConfiguration;
+  private Configuration configuration;
   private Map<Pattern, Handler> handlers;
 
-  public RequestProcessor(Socket clientSocket, ServerConfiguration serverConfiguration, Map<Pattern, Handler> handlers) {
+  public RequestProcessor(Socket clientSocket, Configuration configuration, Map<Pattern, Handler> handlers) {
     this.clientSocket = clientSocket;
-    this.serverConfiguration = serverConfiguration;
+    this.configuration = configuration;
     this.handlers = handlers;
   }
 
@@ -37,11 +37,11 @@ public class RequestProcessor implements Runnable {
   }
 
   private void process(OutputStream out, InputStream in) throws IOException {
-    clientSocket.setSoTimeout(serverConfiguration.getRequestTimeOut());
+    clientSocket.setSoTimeout(configuration.getRequestTimeOut());
 
-    Request request = new Request(serverConfiguration);
+    Request request = new Request(configuration);
     try {
-      request = new Request(in, serverConfiguration);
+      request = new Request(in, configuration);
       Response response = new Response(request);
 
       executeHandlers(request, response);

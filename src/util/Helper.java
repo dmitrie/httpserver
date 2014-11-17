@@ -25,4 +25,10 @@ public class Helper {
     SimpleDateFormat dateFormat = new SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss zzz");
     return dateFormat.format(calendar.getTime());
   }
+
+  public static void sleep(long milliseconds) {
+    try {
+      Thread.sleep(milliseconds);
+    } catch (InterruptedException ignored) {}
+  }
 }
