@@ -71,7 +71,9 @@ public class Server {
 
   private Socket accept() {
     try {
-      return serverSocket.accept();
+      Socket socket = serverSocket.accept();
+      socket.setSoTimeout(configuration.getRequestTimeOut());
+      return socket;
     } catch (IOException e) {
       throw new RuntimeException(e);
     }

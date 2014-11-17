@@ -37,8 +37,6 @@ public class RequestProcessor implements Runnable {
   }
 
   private void process(OutputStream out, InputStream in) throws IOException {
-    clientSocket.setSoTimeout(configuration.getRequestTimeOut());
-
     Request request = new Request(configuration);
     try {
       request = new Request(in, configuration);
