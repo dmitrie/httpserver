@@ -43,6 +43,8 @@ public class RequestProcessor implements Runnable {
       Response response = new Response(request);
 
       executeHandlers(request, response);
+      if (response.getResponseStatusCode() == null)
+        response.setStandardResponse(NOT_FOUND);
 
       out.write(response.generateMessage().getBytes(StandardCharsets.ISO_8859_1));
       out.flush();
@@ -58,9 +60,6 @@ public class RequestProcessor implements Runnable {
       for (Map.Entry<Pattern, Handler> entry : handlers.entrySet())
         if (entry.getKey().matcher(request.getRequestURI().getPath()).matches())
           entry.getValue().handle(request, response);
-
-    if (response.getResponseStatusCode() == null)
-      response.setStandardResponse(NOT_FOUND);
   }
 
   public void respondWithError(OutputStream out, Request request, HttpStatusCode code) throws IOException {
