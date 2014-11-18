@@ -29,6 +29,10 @@ public class Server {
 
   public static void main(String[] args) throws IOException {
     Server server = new Server();
+    if (args.length != 1) {
+      System.err.println("Usage: java Server <document root>");
+      System.exit(1);
+    }
     String documentRoot = args[0];
     server.setHandler(".*", new FileSystemHandler(documentRoot));
     server.start();
