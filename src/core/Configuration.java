@@ -6,7 +6,7 @@ import java.util.List;
 public class Configuration {
   private int maximumURILength = 8190;
   private int requestTimeOut = 5000;
-  private int portNumber = 8080;
+  private int port = 8080;
   private List<String> implementedMethods = new ArrayList<String>(){{
     add("GET");
     add("POST");
@@ -27,8 +27,8 @@ public class Configuration {
     return requestTimeOut;
   }
 
-  public int getPortNumber() {
-    return portNumber;
+  public int getPort() {
+    return port;
   }
 
   public List<String> getImplementedMethods() {
@@ -55,8 +55,8 @@ public class Configuration {
     this.requestTimeOut = requestTimeOut;
   }
 
-  public void setPortNumber(int portNumber) {
-    this.portNumber = portNumber;
+  public void setPort(int port) {
+    this.port = port;
   }
 
   public void setImplementedMethods(List<String> implementedMethods) {

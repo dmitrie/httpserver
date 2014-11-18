@@ -59,7 +59,7 @@ public class ServerTest {
 
   private Configuration getConfiguration() {
     Configuration configuration = new Configuration();
-    configuration.setPortNumber(8361);
+    configuration.setPort(8361);
     configuration.setRequestTimeOut(500);
     return configuration;
   }

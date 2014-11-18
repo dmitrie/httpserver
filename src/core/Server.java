@@ -44,7 +44,7 @@ public class Server {
   }
 
   public void start() {
-    int port = configuration.getPortNumber();
+    int port = configuration.getPort();
     System.out.println("Starting server on port " + port + "...");
     serverSocket = initServerSocket(port);
     threadPool = Executors.newFixedThreadPool(configuration.getNumberOfThreads());
@@ -76,9 +76,9 @@ public class Server {
 
   private Socket accept() {
     try {
-      Socket socket = serverSocket.accept();
-      socket.setSoTimeout(configuration.getRequestTimeOut());
-      return socket;
+      Socket clientSocket = serverSocket.accept();
+      clientSocket.setSoTimeout(configuration.getRequestTimeOut());
+      return clientSocket;
     } catch (IOException e) {
       throw new RuntimeException(e);
     }
