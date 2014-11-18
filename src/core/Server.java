@@ -3,6 +3,7 @@ package core;
 import handlers.FileSystemHandler;
 
 import java.io.IOException;
+import java.net.InetSocketAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.LinkedHashMap;
@@ -44,13 +45,13 @@ public class Server {
 
   public void start() {
     int port = configuration.getPortNumber();
-    System.out.println("Starting server on port: " + port);
+    System.out.println("Starting server on port " + port + "...");
     serverSocket = initServerSocket(port);
     threadPool = Executors.newFixedThreadPool(configuration.getNumberOfThreads());
     try {
       listen();
     } catch (Exception e) {
-      e.printStackTrace();
+      System.out.println(e.getMessage());
       stop();
     }
   }
@@ -85,19 +86,28 @@ public class Server {
 
   private ServerSocket initServerSocket(int portNumber) {
     try {
-      return new ServerSocket(portNumber);
+      ServerSocket socket = new ServerSocket();
+      socket.setReuseAddress(true);
+      socket.bind(new InetSocketAddress(portNumber));
+      return socket;
     } catch (IOException e) {
       throw new RuntimeException("Could not start server", e);
     }
   }
 
   private void safeClose(java.io.Closeable closable) {
+    if (closable == null)
+      return;
+
     try {
       closable.close();
     } catch (Throwable ignored) {}
   }
 
   private void stopThreads() {
+    if (threadPool == null)
+      return;
+
     try {
       threadPool.shutdown();
       if(!threadPool.awaitTermination(10, TimeUnit.SECONDS))
