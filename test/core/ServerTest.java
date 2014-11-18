@@ -24,18 +24,28 @@ public class ServerTest {
 
   @Before
   public void setUp() throws Exception {
+    LinkedHashMap<Pattern, Handler> handlers = new LinkedHashMap<>();
+    handlers.put(Pattern.compile(".*"), new FileSystemHandler("/home/kool/IdeaProjects/httpserver/test/web/"));
+
+    startServer(handlers);
+  }
+
+  public void startServer(LinkedHashMap<Pattern, Handler> handlers) {
     server = new Server(getConfiguration());
-    server.setHandler(".*", new FileSystemHandler("/home/kool/IdeaProjects/httpserver/test/web/"));
+    server.handlers = handlers;
     serverThread = new Thread(server::start);
     serverThread.start();
-    awaitCondition(15000, () -> server.isRunning());
+    awaitCondition(10000, () -> server.isRunning());
+    System.out.println("Server started");
   }
 
   @After
   public void tearDown() throws Exception {
     server.stop();
-    while (server.isRunning()) { Thread.sleep(100); }
     serverThread.interrupt();
+    awaitCondition(10000, () -> !server.isRunning());
+    server = null;
+    serverThread = null;
   }
 
   private boolean awaitCondition(long milliseconds, BooleanSupplier condition) {
@@ -122,9 +132,12 @@ public class ServerTest {
   public void testMultipleHandlers() throws Exception {
     Map<Pattern, Handler> originalServerHandlers = server.handlers;
     try {
-      server.handlers = new LinkedHashMap<>();
-      server.setHandler(".*", new HandlerOK());
-      server.setHandler("/abc/.*", new HandlerNotFound());
+      tearDown();
+
+      LinkedHashMap<Pattern, Handler> handlers = new LinkedHashMap<>();
+      handlers.put(Pattern.compile(".*"), new HandlerOK());
+      handlers.put(Pattern.compile("/abc/.*"), new HandlerNotFound());
+      startServer(handlers);
 
       IncomingHttpMessage responseOneHandler = sendRequest("GET /test.html HTTP/1.1\r\nHost: www.google.com\r\n\r\n");
       assertEquals("HTTP/1.1 " + OK, responseOneHandler.getStartLine());
