@@ -64,8 +64,8 @@ public class ServerTest {
     return configuration;
   }
 
-  public IncomingHttpMessage sendRequest(String request) throws IOException {
-    IncomingHttpMessage serverResponse;
+  public IncomingHttpMessageOld sendRequest(String request) throws IOException {
+    IncomingHttpMessageOld serverResponse;
     try (
       Socket clientSocket = new Socket("localhost", 8361);
       PrintWriter out = new PrintWriter(clientSocket.getOutputStream(), true);
@@ -81,8 +81,8 @@ public class ServerTest {
     return serverResponse;
   }
 
-  private IncomingHttpMessage readServerResponse(InputStream in) throws IOException {
-    IncomingHttpMessage serverResponse = new IncomingHttpMessage();
+  private IncomingHttpMessageOld readServerResponse(InputStream in) throws IOException {
+    IncomingHttpMessageOld serverResponse = new IncomingHttpMessageOld();
     String[] statusLineAndHeaders = serverResponse.readStartLineAndHeaders(in).split(CRLF, 2);
 
     serverResponse.setStartLine(statusLineAndHeaders[0]);
@@ -95,7 +95,7 @@ public class ServerTest {
 
   @Test
   public void testHtmlFileHandlerSuccessFileReturned() throws Exception {
-    IncomingHttpMessage response = sendRequest(
+    IncomingHttpMessageOld response = sendRequest(
       "GET /test.html HTTP/1.1\r\nHost: localhost\r\n\r\n");
 
     assertEquals("HTTP/1.1 " + OK, response.getStartLine());
@@ -105,7 +105,7 @@ public class ServerTest {
 
   @Test
   public void testHtmlFileHandlerSuccessFileWithSpaceInNameReturned() throws Exception {
-    IncomingHttpMessage response = sendRequest(
+    IncomingHttpMessageOld response = sendRequest(
       "GET /folder/test%20file%201.html HTTP/1.1\r\nHost: localhost\r\n\r\n");
 
     assertEquals("HTTP/1.1 " + OK, response.getStartLine());
@@ -139,11 +139,11 @@ public class ServerTest {
       handlers.put(Pattern.compile("/abc/.*"), new HandlerNotFound());
       startServer(handlers);
 
-      IncomingHttpMessage responseOneHandler = sendRequest("GET /test.html HTTP/1.1\r\nHost: www.google.com\r\n\r\n");
+      IncomingHttpMessageOld responseOneHandler = sendRequest("GET /test.html HTTP/1.1\r\nHost: www.google.com\r\n\r\n");
       assertEquals("HTTP/1.1 " + OK, responseOneHandler.getStartLine());
       assertEquals("foo", responseOneHandler.getBody());
 
-      IncomingHttpMessage responseTwoHandlers = sendRequest("GET /abc/test.html HTTP/1.1\r\nHost: www.google.com\r\n\r\n");
+      IncomingHttpMessageOld responseTwoHandlers = sendRequest("GET /abc/test.html HTTP/1.1\r\nHost: www.google.com\r\n\r\n");
       assertEquals("HTTP/1.1 " + NOT_FOUND, responseTwoHandlers.getStartLine());
       assertEquals("foobar", responseTwoHandlers.getBody());
     } finally {
@@ -153,7 +153,7 @@ public class ServerTest {
 
   public static class HandlerOK extends Handler {
     @Override
-    public void handle(Request request, Response response) {
+    public void handle(Request request, ResponseOld response) {
       response.setResponseStatusCode(OK);
       response.setBody("foo");
     }
@@ -161,7 +161,7 @@ public class ServerTest {
 
   public static class HandlerNotFound extends Handler {
     @Override
-    public void handle(Request request, Response response) {
+    public void handle(Request request, ResponseOld response) {
       response.setResponseStatusCode(NOT_FOUND);
       response.setBody(response.getBody() + "bar");
     }
@@ -169,7 +169,7 @@ public class ServerTest {
 
   @Test
   public void testHtmlFileHandlerSuccessNonASCIIFileInISO_8859_1_Returned() throws Exception {
-    IncomingHttpMessage response = sendRequest(
+    IncomingHttpMessageOld response = sendRequest(
       "GET /folder/inner%20folder/non-ASCII-test_in_ISO-8859-1.html HTTP/1.1\r\nHost: localhost\r\n\r\n");
 
     assertEquals("HTTP/1.1 " + OK, response.getStartLine());

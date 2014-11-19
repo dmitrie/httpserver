@@ -66,7 +66,7 @@ public class HttpRequestRegEx {
     return VALID_METHOD.matcher(method).matches();
   }
 
-  public static boolean validateProtocol(String protocol) {
+  public static boolean validateHttpVersion(String protocol) {
     return VALID_PROTOCOL.matcher(protocol).matches();
   }
 

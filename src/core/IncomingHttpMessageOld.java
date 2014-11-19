@@ -8,7 +8,7 @@ import static core.HttpRequestRegEx.*;
 import static core.HttpStatusCode.BAD_REQUEST;
 import static core.HttpStatusCode.HTTP_VERSION_NOT_SUPPORTED;
 
-public class IncomingHttpMessage extends HttpMessage {
+public class IncomingHttpMessageOld extends HttpMessageOld {
 
   public String readStartLineAndHeaders(InputStream in) throws IOException {
     StringBuilder stringBuilder = new StringBuilder();
@@ -60,7 +60,7 @@ public class IncomingHttpMessage extends HttpMessage {
 
   @Override
   public void setHttpVersion(String protocol) {
-    if (!validateProtocol(protocol))
+    if (!validateHttpVersion(protocol))
       throw new HttpError(BAD_REQUEST);
 
     if (!getConfiguration().getSupportedHttpVersions().contains(protocol))

@@ -2,7 +2,7 @@ package handlers;
 
 import core.Handler;
 import core.Request;
-import core.Response;
+import core.ResponseOld;
 
 import java.io.IOException;
 
@@ -19,13 +19,13 @@ public class FileSystemHandler extends Handler {
   }
 
   @Override
-  public void handle(Request request, Response response) {
+  public void handle(Request request, ResponseOld response) {
     if (response.getResponseStatusCode() != null)
       return;
 
-    String localPath = combinePaths(getDocumentRoot(), request.getRequestURI().getPath());
+    String localPath = combinePaths(getDocumentRoot(), request.requestURI.getPath());
 
-    switch (request.getMethod()) {
+    switch (request.method) {
       case "GET":
       case "HEAD":
         try {
@@ -38,7 +38,7 @@ public class FileSystemHandler extends Handler {
         response.setHeader("Content-Type", "text/html; charset=" + response.getBodyCharset());
         response.setHeader("Last-modified", getServerTime());
 
-        if ("HEAD".equals(request.getMethod())) {
+        if ("HEAD".equals(request.method)) {
           response.setHeader("Content-Length", response.getContentLength());
           response.setBody(null);
         }

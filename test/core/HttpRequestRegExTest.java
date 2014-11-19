@@ -112,19 +112,19 @@ public class HttpRequestRegExTest {
 
   @Test
   public void testValidateProtocol_RFC2616_3_1() throws Exception {
-    assertTrue(validateProtocol("HTTP/1.1"));
-    assertTrue(validateProtocol("HTTP/10.1"));
-    assertTrue(validateProtocol("HTTP/1.10"));
-    assertTrue(validateProtocol("HTTP/123.123"));
-    assertTrue(validateProtocol("HTTP/0.0"));
+    assertTrue(validateHttpVersion("HTTP/1.1"));
+    assertTrue(validateHttpVersion("HTTP/10.1"));
+    assertTrue(validateHttpVersion("HTTP/1.10"));
+    assertTrue(validateHttpVersion("HTTP/123.123"));
+    assertTrue(validateHttpVersion("HTTP/0.0"));
 
-    assertFalse(validateProtocol("HTTP/11"));
-    assertFalse(validateProtocol("HTTP/1"));
-    assertFalse(validateProtocol("HTTP1.1"));
-    assertFalse(validateProtocol("HTTP/.9"));
-    assertFalse(validateProtocol("HTTP/ 1.1"));
-    assertFalse(validateProtocol("HTTP /1.1"));
-    assertFalse(validateProtocol("HTTP / 1.1"));
+    assertFalse(validateHttpVersion("HTTP/11"));
+    assertFalse(validateHttpVersion("HTTP/1"));
+    assertFalse(validateHttpVersion("HTTP1.1"));
+    assertFalse(validateHttpVersion("HTTP/.9"));
+    assertFalse(validateHttpVersion("HTTP/ 1.1"));
+    assertFalse(validateHttpVersion("HTTP /1.1"));
+    assertFalse(validateHttpVersion("HTTP / 1.1"));
   }
 
   @Test

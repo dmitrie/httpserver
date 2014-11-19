@@ -3,18 +3,18 @@ package core;
 import static core.HttpStatusCode.INTERNAL_SERVER_ERROR;
 import static util.Helper.getServerTime;
 
-public class Response extends HttpMessage {
+public class ResponseOld extends HttpMessageOld {
   private String requestMethod;
 
-  public Response(Request request) {
+  public ResponseOld(Request request) {
     setRequestFieldsNeededInResponse(request);
-    if (request.getResponseStatusCode() != null)
-      setStandardResponse(request.getResponseStatusCode());
+    if (request.responseStatusCode != null)
+      setStandardResponse(request.responseStatusCode);
   }
 
   public void setRequestFieldsNeededInResponse(Request request) {
-    setHttpVersion(request.getHttpVersion() == null ? "HTTP/1.1" : request.getHttpVersion());
-    this.requestMethod = request.getMethod();
+    setHttpVersion(request.httpVersion == null ? "HTTP/1.1" : request.httpVersion);
+    this.requestMethod = request.method;
   }
 
   public void setStandardResponse(HttpStatusCode code) {

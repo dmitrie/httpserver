@@ -4,12 +4,12 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.Socket;
-import java.net.SocketTimeoutException;
 import java.nio.charset.StandardCharsets;
 import java.util.Map;
 import java.util.regex.Pattern;
 
-import static core.HttpStatusCode.*;
+import static core.HttpStatusCode.INTERNAL_SERVER_ERROR;
+import static core.HttpStatusCode.NOT_FOUND;
 
 public class RequestProcessor implements Runnable {
   private final Socket clientSocket;
@@ -37,10 +37,11 @@ public class RequestProcessor implements Runnable {
   }
 
   private void process(OutputStream out, InputStream in) throws IOException {
-    Request request = new Request(configuration);
+    Request request = new Request();
     try {
-      request = new Request(in, configuration);
-      Response response = new Response(request);
+      RequestParser parser = new RequestParser(configuration);
+      request = parser.setFields(in);
+      ResponseOld response = new ResponseOld(request);
 
       executeHandlers(request, response);
       if (response.getResponseStatusCode() == null)
@@ -48,22 +49,20 @@ public class RequestProcessor implements Runnable {
 
       out.write(response.generateMessage().getBytes(StandardCharsets.ISO_8859_1));
       out.flush();
-    } catch (SocketTimeoutException e) {
-      respondWithError(out, request, REQUEST_TIMEOUT);
     } catch (Exception e) {
       respondWithError(out, request, INTERNAL_SERVER_ERROR);
     }
   }
 
-  private void executeHandlers(Request request, Response response) throws InstantiationException, IllegalAccessException, java.lang.reflect.InvocationTargetException, NoSuchMethodException {
-    if (request.getRequestURI() != null)
+  private void executeHandlers(Request request, ResponseOld response) throws InstantiationException, IllegalAccessException, java.lang.reflect.InvocationTargetException, NoSuchMethodException {
+    if (request.requestURI != null)
       for (Map.Entry<Pattern, Handler> entry : handlers.entrySet())
-        if (entry.getKey().matcher(request.getRequestURI().getPath()).matches())
+        if (entry.getKey().matcher(request.requestURI.getPath()).matches())
           entry.getValue().handle(request, response);
   }
 
   public void respondWithError(OutputStream out, Request request, HttpStatusCode code) throws IOException {
-    Response response = new Response(request);
+    ResponseOld response = new ResponseOld(request);
     response.setStandardResponse(code);
     out.write(response.generateMessage().getBytes(StandardCharsets.ISO_8859_1));
     out.flush();
