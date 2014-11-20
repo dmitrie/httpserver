@@ -20,7 +20,8 @@ import static core.HttpMessageReader.readExactNumberOfBytes;
 import static core.HttpMessageReader.readStartLineAndHeaders;
 import static core.HttpRequestRegEx.CRLF;
 import static core.HttpRequestRegEx.getParsedBodyCharset;
-import static core.HttpStatusCode.*;
+import static core.HttpStatusCode.OK;
+import static core.HttpStatusCode.REQUEST_TIMEOUT;
 import static org.junit.Assert.assertEquals;
 
 public class ServerTest {
@@ -120,7 +121,7 @@ public class ServerTest {
   }
 
   @Test
-  public void testHtmlFileHandlerSuccessFileReturned() throws Exception {
+  public void testSuccessFileReturned() throws Exception {
     sendRequest("GET /test.html HTTP/1.1\r\nHost: localhost\r\n\r\n");
 
     assertEquals("HTTP/1.1 " + OK, statusLine);
@@ -129,92 +130,8 @@ public class ServerTest {
   }
 
   @Test
-  public void testHtmlFileHandlerSuccessFileWithSpaceInNameReturned() throws Exception {
-    sendRequest("GET /folder/test%20file%201.html HTTP/1.1\r\nHost: localhost\r\n\r\n");
-
-    assertEquals("HTTP/1.1 " + OK, statusLine);
-    assertEquals("28", headers.get("Content-length"));
-    assertEquals("<h2>Example 1 in folder</h2>", body);
-  }
-
-  @Test
-  public void testHtmlFileHandlerFileNotFound() throws Exception {
-    sendRequest("GET /foo/bar/test.html HTTP/1.1\r\nHost: localhost\r\n\r\n");
-    assertEquals("HTTP/1.1 " + NOT_FOUND, statusLine);
-  }
-
-  @Test
-  public void testHtmlFileHandlerBadRequest() throws Exception {
-    sendRequest("foo bar\r\n\r\n");
-    assertEquals("HTTP/1.1 " + BAD_REQUEST, statusLine);
-  }
-
-  @Test
   public void testRespondWithErrorRequestTimeOut() throws Exception {
     sendRequest(null);
     assertEquals("HTTP/1.1 " + REQUEST_TIMEOUT, statusLine);
-  }
-
-  @Test
-  public void testMultipleHandlers() throws Exception {
-    Map<Pattern, Handler> originalServerHandlers = server.handlers;
-    try {
-      tearDown();
-
-      LinkedHashMap<Pattern, Handler> handlers = new LinkedHashMap<>();
-      handlers.put(Pattern.compile(".*"), new HandlerOK());
-      handlers.put(Pattern.compile("/abc/.*"), new HandlerNotFound());
-      startServer(handlers);
-
-      sendRequest("GET /test.html HTTP/1.1\r\nHost: www.google.com\r\n\r\n");
-      assertEquals("HTTP/1.1 " + OK, statusLine);
-      assertEquals("foo", body);
-
-      sendRequest("GET /abc/test.html HTTP/1.1\r\nHost: www.google.com\r\n\r\n");
-      assertEquals("HTTP/1.1 " + NOT_FOUND, statusLine);
-      assertEquals("foobar", body);
-    } finally {
-      server.handlers = originalServerHandlers;
-    }
-  }
-
-  @Test
-  public void testNoHandlers() throws Exception {
-    Map<Pattern, Handler> originalServerHandlers = server.handlers;
-    try {
-      tearDown();
-
-      startServer(new LinkedHashMap<>());
-
-      sendRequest("GET / HTTP/1.1\r\nHost: localhost\r\n\r\n");
-      assertEquals("HTTP/1.1 " + NOT_FOUND, statusLine);
-    } finally {
-      server.handlers = originalServerHandlers;
-    }
-  }
-
-  public static class HandlerOK extends Handler {
-    @Override
-    public void handle(Request request, Response response) {
-      response.responseStatusCode = OK;
-      response.setBody("foo");
-    }
-  }
-
-  public static class HandlerNotFound extends Handler {
-    @Override
-    public void handle(Request request, Response response) {
-      response.responseStatusCode = NOT_FOUND;
-      response.setBody(response.getBody() + "bar");
-    }
-  }
-
-  @Test
-  public void testHtmlFileHandlerSuccessNonASCIIFileInISO_8859_1_Returned() throws Exception {
-    sendRequest("GET /folder/inner%20folder/non-ASCII-test_in_ISO-8859-1.html HTTP/1.1\r\nHost: localhost\r\n\r\n");
-
-    assertEquals("HTTP/1.1 " + OK, statusLine);
-    assertEquals("41", headers.get("Content-length"));
-    assertEquals("<h3>«Test» file inside inner folder</h3>\n", body);
   }
 }

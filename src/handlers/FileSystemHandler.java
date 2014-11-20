@@ -5,10 +5,13 @@ import core.Request;
 import core.Response;
 
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 
 import static core.HttpStatusCode.NOT_FOUND;
 import static core.HttpStatusCode.OK;
-import static util.Helper.*;
+import static util.Helper.combinePaths;
+import static util.Helper.getServerTime;
 
 public class FileSystemHandler extends Handler {
 
@@ -29,7 +32,8 @@ public class FileSystemHandler extends Handler {
       case "GET":
       case "HEAD":
         try {
-          response.setBody(readFile(localPath, response.bodyCharset));
+          String body = new String(Files.readAllBytes(Paths.get(localPath)), response.bodyCharset);
+          response.setBody(body);
           response.responseStatusCode = OK;
         } catch (IOException e) {
           response.setBody("<div style=\"text-align: center;\"><h1 style=\"color: red;\">404 Error</h1><br>File not found</div>");

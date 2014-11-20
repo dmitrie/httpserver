@@ -47,7 +47,7 @@ public class HttpMessageReader {
     return new String(bytes, StandardCharsets.ISO_8859_1);
   }
 
-  public static boolean isEndOfHeaders(byte[] bytes) {
+  private static boolean isEndOfHeaders(byte[] bytes) {
     int size = bytes.length;
     return size>=4 &&
       NEWLINE[0] == bytes[size-4] &&
