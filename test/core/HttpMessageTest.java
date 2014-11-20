@@ -8,6 +8,6 @@ public class HttpMessageTest {
 
   @Test
   public void testGetContentLength() throws Exception {
-    assertEquals(0, new Request().getContentLength());
+    assertEquals(0, new Request().calculateContentLength());
   }
 }

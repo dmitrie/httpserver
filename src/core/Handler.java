@@ -1,5 +1,5 @@
 package core;
 
 public abstract class Handler {
-  protected abstract void handle(Request request, ResponseOld response);
+  protected abstract void handle(Request request, Response response);
 }

@@ -8,6 +8,8 @@ import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.LinkedList;
 
+import static core.HttpMessageReader.readExactNumberOfBytes;
+import static core.HttpMessageReader.readStartLineAndHeaders;
 import static core.HttpStatusCode.*;
 import static java.nio.charset.StandardCharsets.ISO_8859_1;
 import static org.junit.Assert.*;
@@ -49,42 +51,42 @@ public class RequestParserTest {
 
   @Test
   public void testReadStartLine_RFC2616_4_1() throws Exception {
-    assertEquals("request line", requestParser.readStartLineAndHeaders(in("request line\r\n\r\nbody")));
+    assertEquals("request line", readStartLineAndHeaders(in("request line\r\n\r\nbody")));
   }
 
   @Test
   public void testReadStartLineAndHeaders_RFC2616_4_1() throws Exception {
-    assertEquals("request line\r\nheader", requestParser.readStartLineAndHeaders(in("request line\r\nheader\r\n\r\nbody")));
+    assertEquals("request line\r\nheader", readStartLineAndHeaders(in("request line\r\nheader\r\n\r\nbody")));
   }
 
   @Test
   public void testReadStartLineAndBody_RFC2616_4_1() throws Exception {
     InputStream in = in("request line\r\n\r\nbody");
-    assertEquals("request line", requestParser.readStartLineAndHeaders(in));
-    assertEquals("body", requestParser.readExactNumberOfBytes(in, 4));
+    assertEquals("request line", readStartLineAndHeaders(in));
+    assertEquals("body", readExactNumberOfBytes(in, 4, StandardCharsets.ISO_8859_1));
   }
 
   @Test
   public void testReadStartLineAndHeadersAndBody_RFC2616_4_1() throws Exception {
     InputStream in = in("request line\r\nheader 1\r\nheader 2\r\n\r\nbody\r\n\r\nbody");
-    assertEquals("request line\r\nheader 1\r\nheader 2", requestParser.readStartLineAndHeaders(in));
-    assertEquals("body\r\n\r\nbody", requestParser.readExactNumberOfBytes(in, 12));
+    assertEquals("request line\r\nheader 1\r\nheader 2", readStartLineAndHeaders(in));
+    assertEquals("body\r\n\r\nbody", readExactNumberOfBytes(in, 12, StandardCharsets.ISO_8859_1));
   }
 
   @Test
   public void testSkipNewLinesBeforeStartLine_RFC2616_4_1() throws Exception {
-    assertEquals("abc\r\ndef", requestParser.readStartLineAndHeaders(in("\r\n\r\nabc\r\ndef\r\n\r\n")));
+    assertEquals("abc\r\ndef", readStartLineAndHeaders(in("\r\n\r\nabc\r\ndef\r\n\r\n")));
   }
 
   @Test
   public void testReadNonAsciiHeaders() throws Exception {
-    assertEquals("abc\u00FF", requestParser.readStartLineAndHeaders(in("abc\u00FF\r\n\r\n")));
+    assertEquals("abc\u00FF", readStartLineAndHeaders(in("abc\u00FF\r\n\r\n")));
   }
 
   @Test
   public void testMethod() throws Exception {
     Request request = parse("POST / HTTP/1.1\r\nHost: localhost\r\n\r\n");
-    assertEquals("POST", request.method);
+    assertEquals("POST", request.requestMethod);
   }
 
   @Test
@@ -369,7 +371,7 @@ public class RequestParserTest {
   @Test
   public void testSetFieldsSuccess() throws Exception {
     Request request = requestParser.setFields(in("GET /?a=1#abc HTTP/1.1\r\nHost: localhost\r\nContent-Length: 4\r\n\r\nbody"));
-    assertEquals("GET", request.method);
+    assertEquals("GET", request.requestMethod);
     assertEquals("http://localhost/?a=1#abc", request.requestURI.toString());
     assertEquals("HTTP/1.1", request.httpVersion);
     assertEquals("body", request.body);
@@ -380,7 +382,7 @@ public class RequestParserTest {
   @Test
   public void testSetFieldsFailure() throws Exception {
     Request request = requestParser.setFields(in("GET /?a=1#abc HTTP/0.9\r\nHost: localhost\r\nContent-Length: 4\r\n\r\nbody"));
-    assertEquals("GET", request.method);
+    assertEquals("GET", request.requestMethod);
     assertEquals("/?a=1#abc", request.requestURI.toString());
     assertEquals("HTTP/0.9", request.httpVersion);
     assertEquals(null, request.body);

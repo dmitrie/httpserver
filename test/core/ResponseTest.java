@@ -1,127 +1,186 @@
 package core;
 
-import org.junit.Before;
 import org.junit.Test;
-import util.LinkedCaseInsensitiveMap;
-
-import java.io.ByteArrayInputStream;
-import java.io.InputStream;
-import java.nio.charset.StandardCharsets;
 
 import static core.HttpStatusCode.*;
-import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.*;
 
 public class ResponseTest {
 
-  Configuration configuration = new Configuration();
-
-  @Before
-  public void setUp() throws Exception {
-    configuration.setAbsoluteUriIsAllowed(true);
+  @Test
+  public void testSetDefaultHttpVersionInCaseOfEmptyConstructor() throws Exception {
+    Response response = new Response();
+    assertEquals("HTTP/1.1", response.httpVersion);
   }
 
   @Test
-  public void testConstructorUsesErrorFromRequest() throws Exception {
-    String requestString = "foo bar\r\n\r\n";
-    InputStream in = new ByteArrayInputStream(requestString.getBytes());
-    Request request = new RequestParser(configuration).setFields(in);
+  public void testUseResponseStatusCodeFromRequest() throws Exception {
+    Request request = new Request();
+    request.responseStatusCode = NOT_FOUND;
 
-    ResponseOld response = new ResponseOld(request);
-    assertEquals(BAD_REQUEST, request.responseStatusCode);
-    assertEquals(BAD_REQUEST, response.getResponseStatusCode());
+    Response response = new Response(request);
+    assertEquals(NOT_FOUND, response.responseStatusCode);
   }
 
   @Test
-  public void testSetErrorBodyAndHeadersDefaultResponse() throws Exception {
-    ResponseOld response = new ResponseOld(new Request());
-    response.setStandardResponse(HTTP_VERSION_NOT_SUPPORTED);
+  public void testUseHttpVersionFromRequest() throws Exception {
+    Request request = new Request();
+    request.httpVersion = "HTTP/1.0";
 
-    assertEquals(HTTP_VERSION_NOT_SUPPORTED, response.getResponseStatusCode());
-    assertEquals(HTTP_VERSION_NOT_SUPPORTED.toString(), response.getBody());
+    Response response = new Response(request);
+    assertEquals("HTTP/1.0", response.httpVersion);
   }
 
   @Test
-  public void testGetContentLengthUsesCurrentCharset() throws Exception {
-    ResponseOld response = new ResponseOld(new Request());
-    response.setBody("test\n");
-    response.setBodyCharset(StandardCharsets.UTF_8);
-    assertEquals("5", response.getContentLength());
-    response.setBodyCharset(StandardCharsets.UTF_16);
-    assertEquals("12", response.getContentLength());
+  public void testUseRequestMethodFromRequest() throws Exception {
+    Request request = new Request();
+    request.requestMethod = "GET";
+
+    Response response = new Response(request);
+    assertEquals("GET", response.requestMethod);
   }
 
   @Test
-  public void testGenerateMessage_RFC2616_6() throws Exception {
-    ResponseOld response = new ResponseOld(new Request());
-    response.setBodyCharset(StandardCharsets.UTF_8);
-    response.setBody("test\r\ntest\t");
-    response.setHeader("Content-Type", "text/html; charset=UTF-8");
-    response.setResponseStatusCode(OK);
-    assertEquals("HTTP/1.1 200 OK\r\nContent-Type: text/html; charset=UTF-8\r\nContent-Length: 11\r\n\r\ntest\r\ntest\t", response.generateMessage());
+  public void testGenerateErrorResponse() throws Exception {
+    Request request = new Request();
+    request.responseStatusCode = NOT_FOUND;
+
+    Response response = new Response(request);
+    assertEquals(NOT_FOUND, response.responseStatusCode);
+    assertEquals(NOT_FOUND.toString(), response.body);
   }
 
   @Test
-  public void testGenerateMessageNoHeadersAndNoBody_RFC2616_6() throws Exception {
-    ResponseOld response = new ResponseOld(new Request());
-    response.setResponseStatusCode(OK);
+  public void testSetStandardHeadersInErrorResponse() throws Exception {
+    Request request = new Request();
+    request.responseStatusCode = NOT_IMPLEMENTED;
+
+    Response response = new Response(request);
+    assertTrue(response.getHeader("Content-Type") != null);
+    assertTrue(response.getHeader("Last-modified") != null);
+  }
+
+  @Test
+  public void testSetBody() throws Exception {
+    Response response = new Response();
+    response.setBody("test body");
+
+    assertEquals("test body", response.getBody());
+  }
+
+  @Test
+  public void testSetContentLengthWhenBodyIsSet() throws Exception {
+    Response response = new Response();
+    response.setBody("test body");
+
+    assertEquals("9", response.getHeader("Content-Length"));
+  }
+
+  @Test
+  public void testNoBodyIsAllowedForResponsesToHeadRequests_RFC2616_9_4() throws Exception {
+    Response response = new Response();
+    response.requestMethod = "HEAD";
+    response.setBody("Some body here");
+
+    assertEquals(null, response.body);
+    assertEquals("14", response.getHeader("Content-Length"));
+  }
+
+  @Test
+  public void testMakeSureNoContentHeadersAreSentWithoutBody() throws Exception {
+    Response response = new Response();
+
+    response.setHeader("Content-Type", "test");
+    assertTrue(!response.contentHeadersAreCorrect());
+
+    response.setBody("test");
+    assertTrue(response.contentHeadersAreCorrect());
+  }
+
+  @Test
+  public void testAllowContentHeadersForResponsesToHeadRequests_RFC2616_9_4() throws Exception {
+    Response response = new Response();
+    response.requestMethod = "HEAD";
+
+    response.setHeader("Content-Type", "test");
+    assertTrue(response.contentHeadersAreCorrect());
+  }
+
+  @Test
+  public void testGenerateMessageWithoutHeaders_RFC2616_6() throws Exception {
+    Response response = new Response();
+    response.responseStatusCode = OK;
+
     assertEquals("HTTP/1.1 200 OK\r\n\r\n", response.generateMessage());
   }
 
   @Test
-  public void testGenerateMessageNoBody_RFC2616_6() throws Exception {
-    ResponseOld response = new ResponseOld(new RequestParser(configuration).setFields(new ByteArrayInputStream("HEAD / HTTP/1.1\r\nHost: localhost\r\n\r\n".getBytes())));
-    response.setHeader("Content-Type", "text/html; charset=UTF-8");
-    response.setResponseStatusCode(OK);
-    assertEquals("HTTP/1.1 200 OK\r\nContent-Type: text/html; charset=UTF-8\r\n\r\n", response.generateMessage());
+  public void testGenerateMessageWithHeaders_RFC2616_6() throws Exception {
+    Response response = new Response();
+    response.responseStatusCode = OK;
+    response.setHeader("Header1", "value 1");
+    response.setHeader("Header2", "value 2");
+
+    assertEquals("HTTP/1.1 200 OK\r\nHeader1: value 1\r\nHeader2: value 2\r\n\r\n", response.generateMessage());
   }
 
   @Test
-  public void testGenerateMessageNoHeaders_RFC2616_6() throws Exception {
-    ResponseOld response = new ResponseOld(new RequestParser(configuration).setFields(new ByteArrayInputStream("POST / HTTP/1.1\r\nHost: localhost\r\n\r\n".getBytes())));
-    response.setBodyCharset(StandardCharsets.UTF_8);
-    response.setBody("test\r\ntest\t");
-    response.setResponseStatusCode(OK);
-    assertEquals("HTTP/1.1 200 OK\r\nContent-Length: 11\r\n\r\ntest\r\ntest\t", response.generateMessage());
-  }
-
-  @Test
-  public void testHeaderNamesAreCaseInsensitive_RFC2616_4_2() throws Exception {
-    ResponseOld response = new ResponseOld(new Request());
-    response.setHeaders(new LinkedCaseInsensitiveMap(){{ put("Content-Type", "text/html"); }});
-
-    assertEquals("text/html", response.getHeader("CONTENT-Type"));
-    response.setHeader("Content-TYPE", "text/css");
-    assertEquals("text/css", response.getHeader("Content-Type"));
-  }
-
-  @Test
-  public void testHeaderNamesCaseIsPreserved() throws Exception {
-    ResponseOld response = new ResponseOld(new Request());
-    response.setHeader("Content-Type", "text/html");
-    assertEquals("Content-Type", response.getHeaders().keySet().iterator().next());
-  }
-
-  @Test
-  public void testSetHeaderOverwritesContentLength() throws Exception {
-    ResponseOld response = new ResponseOld(new Request());
-    response.setBodyCharset(StandardCharsets.UTF_8);
-    response.setBody("test\r\ntest\t");
-    response.setHeader("Content-Type", "text/html; charset=UTF-8");
-    response.setHeader("Content-Length", "1");
-    response.setResponseStatusCode(OK);
-    assertEquals("HTTP/1.1 200 OK\r\nContent-Type: text/html; charset=UTF-8\r\nContent-Length: 11\r\n\r\ntest\r\ntest\t", response.generateMessage());
-  }
-
-  @Test
-  public void testGenerateMessageRemovesBodyFromResponseToHead_RFC2616_14_13() throws Exception {
-    Request request = new Request();
-    request.method = "HEAD";
-
-    ResponseOld response = new ResponseOld(request);
-    response.setResponseStatusCode(OK);
+  public void testGenerateMessageWithHeadersAndBody_RFC2616_6() throws Exception {
+    Response response = new Response();
+    response.responseStatusCode = OK;
+    response.setHeader("Header1", "value 1");
     response.setBody("test");
-    response.setHeader("Content-Length", "4");
-    response.setHeader("Content-Type", "text/html; charset=UTF-8");
-    assertEquals("HTTP/1.1 200 OK\r\nContent-Length: 4\r\nContent-Type: text/html; charset=UTF-8\r\n\r\n", response.generateMessage());
+
+    assertEquals("HTTP/1.1 200 OK\r\nHeader1: value 1\r\nContent-Length: 4\r\n\r\ntest", response.generateMessage());
+  }
+
+  @Test
+  public void testGenerateMessageWithBodyAndNoHeaders_RFC2616_6() throws Exception {
+    Response response = new Response();
+    response.responseStatusCode = OK;
+    response.body = "test";
+
+    assertEquals("HTTP/1.1 200 OK\r\n\r\ntest", response.generateMessage());
+  }
+
+  @Test
+  public void testGenerateMessageValidatesStatusCodePresence() throws Exception {
+    Response response = new Response();
+    response.httpVersion = "HTTP/1.1";
+
+    try {
+      response.generateMessage();
+      fail();
+    } catch (RuntimeException e) {
+      assertEquals("Cannot generate a valid HTTP response without status code", e.getMessage());
+    }
+  }
+
+  @Test
+  public void testGenerateMessageValidatesHttpVersionPresence() throws Exception {
+    Response response = new Response();
+    response.responseStatusCode = OK;
+    response.httpVersion = null;
+
+    try {
+      response.generateMessage();
+      fail();
+    } catch (RuntimeException e) {
+      assertEquals("Cannot generate a valid HTTP response without HTTP version", e.getMessage());
+    }
+  }
+
+  @Test
+  public void testGenerateMessageValidatesContentHeaders() throws Exception {
+    Response response = new Response();
+    response.responseStatusCode = OK;
+    response.setHeader("Content-something", "test");
+
+    try {
+      response.generateMessage();
+      fail();
+    } catch (RuntimeException e) {
+      assertEquals("Content-* headers are not allowed without body in response to non-HEAD requests", e.getMessage());
+    }
   }
 }

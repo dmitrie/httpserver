@@ -41,11 +41,11 @@ public class RequestProcessor implements Runnable {
     try {
       RequestParser parser = new RequestParser(configuration);
       request = parser.setFields(in);
-      ResponseOld response = new ResponseOld(request);
+      Response response = new Response(request);
 
       executeHandlers(request, response);
-      if (response.getResponseStatusCode() == null)
-        response.setStandardResponse(NOT_FOUND);
+      if (response.responseStatusCode == null)
+        response.generateStandardResponse(NOT_FOUND);
 
       out.write(response.generateMessage().getBytes(StandardCharsets.ISO_8859_1));
       out.flush();
@@ -54,7 +54,7 @@ public class RequestProcessor implements Runnable {
     }
   }
 
-  private void executeHandlers(Request request, ResponseOld response) throws InstantiationException, IllegalAccessException, java.lang.reflect.InvocationTargetException, NoSuchMethodException {
+  private void executeHandlers(Request request, Response response) throws InstantiationException, IllegalAccessException, java.lang.reflect.InvocationTargetException, NoSuchMethodException {
     if (request.requestURI != null)
       for (Map.Entry<Pattern, Handler> entry : handlers.entrySet())
         if (entry.getKey().matcher(request.requestURI.getPath()).matches())
@@ -62,8 +62,8 @@ public class RequestProcessor implements Runnable {
   }
 
   public void respondWithError(OutputStream out, Request request, HttpStatusCode code) throws IOException {
-    ResponseOld response = new ResponseOld(request);
-    response.setStandardResponse(code);
+    Response response = new Response(request);
+    response.generateStandardResponse(code);
     out.write(response.generateMessage().getBytes(StandardCharsets.ISO_8859_1));
     out.flush();
   }

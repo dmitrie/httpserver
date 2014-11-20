@@ -2,7 +2,7 @@ package handlers;
 
 import core.Handler;
 import core.Request;
-import core.ResponseOld;
+import core.Response;
 
 import java.io.IOException;
 
@@ -19,27 +19,27 @@ public class FileSystemHandler extends Handler {
   }
 
   @Override
-  public void handle(Request request, ResponseOld response) {
-    if (response.getResponseStatusCode() != null)
+  public void handle(Request request, Response response) {
+    if (response.responseStatusCode != null)
       return;
 
     String localPath = combinePaths(getDocumentRoot(), request.requestURI.getPath());
 
-    switch (request.method) {
+    switch (request.requestMethod) {
       case "GET":
       case "HEAD":
         try {
-          response.setBody(readFile(localPath, response.getBodyCharset()));
-          response.setResponseStatusCode(OK);
+          response.setBody(readFile(localPath, response.bodyCharset));
+          response.responseStatusCode = OK;
         } catch (IOException e) {
           response.setBody("<div style=\"text-align: center;\"><h1 style=\"color: red;\">404 Error</h1><br>File not found</div>");
-          response.setResponseStatusCode(NOT_FOUND);
+          response.responseStatusCode = NOT_FOUND;
         }
-        response.setHeader("Content-Type", "text/html; charset=" + response.getBodyCharset());
+        response.setHeader("Content-Type", "text/html; charset=" + response.bodyCharset);
         response.setHeader("Last-modified", getServerTime());
 
-        if ("HEAD".equals(request.method)) {
-          response.setHeader("Content-Length", response.getContentLength());
+        if ("HEAD".equals(request.requestMethod)) {
+          response.setHeader("Content-Length", "" + response.calculateContentLength());
           response.setBody(null);
         }
         break;
