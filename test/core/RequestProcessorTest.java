@@ -1,6 +1,5 @@
 package core;
 
-import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -14,15 +13,11 @@ import static org.mockito.Mockito.*;
 
 public class RequestProcessorTest {
 
-  private final PrintStream savedOut = System.out;
-  private final ByteArrayOutputStream outReplacement = new ByteArrayOutputStream();
   Socket clientSocket;
   RequestProcessor processor;
 
   @Before
   public void setUpStreams() {
-    System.setOut(new PrintStream(outReplacement));
-
     clientSocket = mock(Socket.class);
     processor = spy(new RequestProcessor(
       clientSocket,
@@ -30,20 +25,21 @@ public class RequestProcessorTest {
       mock(Map.class)));
   }
 
-  @After
-  public void cleanUpStreams() {
-    System.setOut(savedOut);
-  }
-
   @Test
   public void testProcessError() throws Exception {
+    PrintStream savedOut = System.out;
+    OutputStream out = new ByteArrayOutputStream();
+    System.setOut(new PrintStream(out));
+
     when(clientSocket.getOutputStream()).thenReturn(mock(OutputStream.class));
     when(clientSocket.getInputStream()).thenReturn(mock(InputStream.class));
     doThrow(new RuntimeException("test")).
       when(processor).process(any(OutputStream.class), any(InputStream.class));
 
     processor.run();
-    assertEquals("Exception caught:\ntest\n", outReplacement.toString());
+    assertEquals("Exception caught:\ntest\n", out.toString());
+
+    System.setOut(savedOut);
   }
 
   @Test
