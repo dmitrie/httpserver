@@ -28,10 +28,6 @@ public class HttpRequestRegEx {
       this.pattern = pattern;
     }
 
-    public String getPattern() {
-      return pattern;
-    }
-
     @Override
     public String toString() {
       return pattern;

@@ -178,6 +178,21 @@ public class ServerTest {
     }
   }
 
+  @Test
+  public void testNoHandlers() throws Exception {
+    Map<Pattern, Handler> originalServerHandlers = server.handlers;
+    try {
+      tearDown();
+
+      startServer(new LinkedHashMap<>());
+
+      sendRequest("GET / HTTP/1.1\r\nHost: localhost\r\n\r\n");
+      assertEquals("HTTP/1.1 " + NOT_FOUND, statusLine);
+    } finally {
+      server.handlers = originalServerHandlers;
+    }
+  }
+
   public static class HandlerOK extends Handler {
     @Override
     public void handle(Request request, Response response) {

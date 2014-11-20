@@ -36,7 +36,7 @@ public class RequestProcessor implements Runnable {
     }
   }
 
-  private void process(OutputStream out, InputStream in) throws IOException {
+  void process(OutputStream out, InputStream in) throws IOException {
     Request request = new Request();
     try {
       RequestParser parser = new RequestParser(configuration);
@@ -54,7 +54,7 @@ public class RequestProcessor implements Runnable {
     }
   }
 
-  private void executeHandlers(Request request, Response response) throws InstantiationException, IllegalAccessException, java.lang.reflect.InvocationTargetException, NoSuchMethodException {
+  void executeHandlers(Request request, Response response) throws InstantiationException, IllegalAccessException, java.lang.reflect.InvocationTargetException, NoSuchMethodException {
     if (request.requestURI != null)
       for (Map.Entry<Pattern, Handler> entry : handlers.entrySet())
         if (entry.getKey().matcher(request.requestURI.getPath()).matches())

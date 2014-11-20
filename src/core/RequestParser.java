@@ -39,7 +39,7 @@ public class RequestParser {
 
     parseRequestLine(requestLine);
     parseHeaders(headers);
-    buildAbsoluteRequestURI();
+    request.requestURI = buildAbsoluteURI(request.getHeader("Host"), request.requestURI);
     parseParameters();
 
     setBodyCharset();
@@ -65,11 +65,10 @@ public class RequestParser {
     setHttpVersion(splitRequestLine[2]);
   }
 
-  public void buildAbsoluteRequestURI() {
-    String host = request.getHeader("Host");
+  public static URI buildAbsoluteURI(String host, URI path) {
     if (host != null) {
       try {
-        request.requestURI = new URI("http://" + host).resolve(request.requestURI);
+        return new URI("http://" + host).resolve(path);
       } catch (URISyntaxException e) {
         throw new HttpError(BAD_REQUEST);
       }

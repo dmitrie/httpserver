@@ -5,12 +5,14 @@ import org.junit.Test;
 
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
+import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.util.LinkedList;
 
 import static core.HttpMessageReader.readExactNumberOfBytes;
 import static core.HttpMessageReader.readStartLineAndHeaders;
 import static core.HttpStatusCode.*;
+import static core.RequestParser.buildAbsoluteURI;
 import static java.nio.charset.StandardCharsets.ISO_8859_1;
 import static org.junit.Assert.*;
 
@@ -216,7 +218,7 @@ public class RequestParserTest {
 
   @Test
   public void testTransferEncodingHeaderNotImplemented() throws Exception {
-    assertHttpError("GET http://www.google.com/ HTTP/1.1\r\nHost: localhost\r\nTransfer-Encoding: chunked\r\n\r\n", NOT_IMPLEMENTED);
+    assertHttpError("GET / HTTP/1.1\r\nHost: localhost\r\nTransfer-Encoding: chunked\r\n\r\n", NOT_IMPLEMENTED);
   }
 
   @Test
@@ -393,6 +395,11 @@ public class RequestParserTest {
   @Test
   public void testUseLFInsteadOfCRLF_RFC2616_2_2() throws Exception {
     assertHttpError("GET / HTTP/1.1\nHost: localhost\n\n", BAD_REQUEST);
+  }
+
+  @Test
+  public void testBuildAbsoluteURI() throws Exception {
+    assertEquals("http://localhost/test.html?a=b#c", buildAbsoluteURI("localhost", new URI("/test.html?a=b#c")).toString());
   }
 }
 

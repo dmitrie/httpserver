@@ -20,14 +20,6 @@ public enum HttpStatusCode {
       this.reasonPhrase = reasonPhrase;
     }
 
-    public int getCode() {
-      return code;
-    }
-
-    public String getReasonPhrase() {
-      return reasonPhrase;
-    }
-
     @Override
     public String toString() {
       return code + " " + reasonPhrase;
