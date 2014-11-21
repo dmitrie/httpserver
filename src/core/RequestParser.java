@@ -16,12 +16,12 @@ public class RequestParser {
   Request request;
   Configuration configuration;
 
-  public RequestParser(Configuration configuration) {
+  RequestParser(Configuration configuration) {
     this.configuration = configuration;
     this.request = new Request();
   }
 
-  public Request setFields(InputStream in) {
+  Request setFields(InputStream in) {
     try {
       parse(in);
     } catch (HttpError e) {
@@ -30,7 +30,7 @@ public class RequestParser {
     return request;
   }
 
-  public void parse(InputStream in) {
+  void parse(InputStream in) {
     String[] requestLineAndHeaders = readStartLineAndHeaders(in).split(CRLF,2);
     String requestLine = requestLineAndHeaders[0];
     String headers = null;
@@ -49,13 +49,13 @@ public class RequestParser {
     validateHeaders();
   }
 
-  public void setBodyCharset() {
+  void setBodyCharset() {
     Charset parsedBodyCharset = getParsedBodyCharset(request.getHeader("Content-Type"));
     if (parsedBodyCharset != null)
       request.bodyCharset = parsedBodyCharset;
   }
 
-  public void parseRequestLine(String requestLine) {
+  void parseRequestLine(String requestLine) {
     if (!validateRequestLineFormat(requestLine))
       throw new HttpError(BAD_REQUEST);
     String[] splitRequestLine = requestLine.split(" ");
@@ -65,7 +65,7 @@ public class RequestParser {
     setHttpVersion(splitRequestLine[2]);
   }
 
-  public static URI buildAbsoluteURI(String host, URI path) {
+  static URI buildAbsoluteURI(String host, URI path) {
     if (host != null) {
       try {
         return new URI("http://" + host).resolve(path);
@@ -76,7 +76,7 @@ public class RequestParser {
       throw new HttpError(BAD_REQUEST);
   }
 
-  public void parseHeaders(String multipleHeaders) {
+  void parseHeaders(String multipleHeaders) {
     if (multipleHeaders == null)
       return;
 
@@ -84,7 +84,7 @@ public class RequestParser {
       setHeader(headerLine);
   }
 
-  public void setHeader(String headerLine) {
+  void setHeader(String headerLine) {
     if (!validateHeader(headerLine))
       throw new HttpError(BAD_REQUEST);
 
@@ -99,7 +99,7 @@ public class RequestParser {
     request.setHeader(header, value);
   }
 
-  public void setHttpVersion(String httpVersion) {
+  void setHttpVersion(String httpVersion) {
     request.httpVersion = httpVersion;
 
     if (!validateHttpVersion(request.httpVersion))
@@ -109,7 +109,7 @@ public class RequestParser {
       throw new HttpError(HTTP_VERSION_NOT_SUPPORTED);
   }
 
-  public void setRequestURI(String uri) {
+  void setRequestURI(String uri) {
     if (uri.indexOf("http://")==0 || "*".equals(uri))
       throw new HttpError(NOT_IMPLEMENTED);
 
@@ -126,7 +126,7 @@ public class RequestParser {
     }
   }
 
-  public void setMethod(String method) {
+  void setMethod(String method) {
     request.requestMethod = method;
 
     if (!validateMethod(request.requestMethod))
@@ -136,7 +136,7 @@ public class RequestParser {
       throw new HttpError(NOT_IMPLEMENTED);
   }
 
-  public void parseParameters() {
+  void parseParameters() {
     try {
       URL url = request.requestURI.toURL();
       if (url.getQuery() != null && "GET".equals(request.requestMethod))
@@ -146,7 +146,7 @@ public class RequestParser {
     }
   }
 
-  public void splitParameters(String parameters) {
+  void splitParameters(String parameters) {
     if (parameters.isEmpty()) return;
 
     String[] splitParameters = parameters.split("&");
@@ -162,7 +162,7 @@ public class RequestParser {
     }
   }
 
-  public void decodeAndSetParameters(String name, String value) {
+  void decodeAndSetParameters(String name, String value) {
     try {
       name = URLDecoder.decode(name, StandardCharsets.UTF_8.name());
       LinkedList<String> values = request.parameters.getOrDefault(name, new LinkedList<>());
@@ -173,7 +173,7 @@ public class RequestParser {
     }
   }
 
-  public void parseBody() {
+  void parseBody() {
     if (request.body == null || !"POST".equals(request.requestMethod)) return;
 
     String contentType = request.getHeader("Content-Type");
@@ -186,7 +186,7 @@ public class RequestParser {
     }
   }
 
-  public void validateHeaders() {
+  void validateHeaders() {
     if (!request.contentHeadersAreCorrect())
       throw new HttpError(BAD_REQUEST);
 
@@ -194,7 +194,7 @@ public class RequestParser {
       throw new HttpError(NOT_IMPLEMENTED);
   }
 
-  public void readBody(InputStream in) {
+  void readBody(InputStream in) {
     String contentLength = request.getHeader("Content-Length");
 
     if (contentLength == null) {
@@ -213,7 +213,7 @@ public class RequestParser {
       throw new HttpError(BAD_REQUEST);
   }
 
-  public int parseContentLengthHeader(String contentLength) {
+  int parseContentLengthHeader(String contentLength) {
     try {
       return Integer.parseInt(contentLength);
     } catch (NumberFormatException e) {

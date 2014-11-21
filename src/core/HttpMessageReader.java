@@ -13,7 +13,7 @@ public class HttpMessageReader {
 
   private static final byte[] NEWLINE = {(byte) 13, (byte) 10};
 
-  public static String readExactNumberOfBytes(InputStream in, int contentLength, Charset charset) {
+  static String readExactNumberOfBytes(InputStream in, int contentLength, Charset charset) {
     byte[] buffer = new byte[contentLength];
     int bytesActuallyRead;
     try {
@@ -26,7 +26,7 @@ public class HttpMessageReader {
     return new String(buffer, 0, bytesActuallyRead, charset);
   }
 
-  public static String readStartLineAndHeaders(InputStream in) {
+  static String readStartLineAndHeaders(InputStream in) {
     byte[] bytes = new byte[0];
     int byteRead;
     try {

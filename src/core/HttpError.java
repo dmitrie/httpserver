@@ -1,13 +1,13 @@
 package core;
 
 public class HttpError extends RuntimeException {
-  public final HttpStatusCode errorCode;
+  final HttpStatusCode errorCode;
 
-  public HttpError(HttpStatusCode errorCode) {
+  HttpError(HttpStatusCode errorCode) {
     this.errorCode = errorCode;
   }
 
-  public HttpStatusCode getErrorCode() {
+  HttpStatusCode getErrorCode() {
     return errorCode;
   }
 }

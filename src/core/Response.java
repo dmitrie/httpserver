@@ -26,11 +26,13 @@ public class Response extends HttpMessage {
     }
   }
 
-  public void generateStandardResponse(HttpStatusCode code) {
-    responseStatusCode = code;
-    setBody(responseStatusCode.toString());
-    setHeader("Content-Type", "text/html; charset=" + bodyCharset);
-    setHeader("Last-modified", getServerTime());
+  @Override
+  public void setBody(String body) {
+    super.setBody(body);
+    setHeader("Content-Length", "" + calculateContentLength());
+
+    if ("HEAD".equals(requestMethod))
+      super.setBody(null);
   }
 
   public String generateMessage() {
@@ -46,6 +48,13 @@ public class Response extends HttpMessage {
       defaultString(body);
   }
 
+  public void generateStandardResponse(HttpStatusCode code) {
+    responseStatusCode = code;
+    setBody(responseStatusCode.toString());
+    setHeader("Content-Type", "text/html; charset=" + bodyCharset);
+    setHeader("Last-modified", getServerTime());
+  }
+
   public void validateResponse() {
     if (responseStatusCode == null)
       throw new RuntimeException("Cannot generate a valid HTTP response without status code");
@@ -55,14 +64,5 @@ public class Response extends HttpMessage {
 
     if (!contentHeadersAreCorrect())
       throw new RuntimeException("Content-* headers are not allowed without body in response to non-HEAD requests");
-  }
-
-  @Override
-  public void setBody(String body) {
-    super.setBody(body);
-    setHeader("Content-Length", "" + calculateContentLength());
-
-    if ("HEAD".equals(requestMethod))
-      super.setBody(null);
   }
 }

@@ -9,7 +9,7 @@ import static java.nio.charset.Charset.forName;
 
 public class HttpRequestRegEx {
 
-  public static final String CRLF = "\r\n";
+  static final String CRLF = "\r\n";
 
   static enum BasicRules {
     CRLF("\\u000D\\u000A"),
@@ -54,27 +54,27 @@ public class HttpRequestRegEx {
     ".*;(" + LWS + ")*charset=(" + TOKEN + ").*"
   );
 
-  public static boolean validateHeader(String headers) {
+  static boolean validateHeader(String headers) {
     return VALID_HEADER.matcher(headers).matches();
   }
 
-  public static boolean validateMethod(String method) {
+  static boolean validateMethod(String method) {
     return VALID_METHOD.matcher(method).matches();
   }
 
-  public static boolean validateHttpVersion(String protocol) {
+  static boolean validateHttpVersion(String protocol) {
     return VALID_PROTOCOL.matcher(protocol).matches();
   }
 
-  public static boolean validateRequestLineFormat(String requestLine) {
+  static boolean validateRequestLineFormat(String requestLine) {
     return VALID_REQUEST_LINE_FORMAT.matcher(requestLine).matches();
   }
 
-  public static String replaceMultipleLWSWithSingleSpace(String headers) {
+  static String replaceMultipleLWSWithSingleSpace(String headers) {
     return headers.replaceAll("(" + LWS + ")+", " ");
   }
 
-  public static Charset getParsedBodyCharset(String contentType) {
+  static Charset getParsedBodyCharset(String contentType) {
     try {
       Matcher matcher = CHARSET_FROM_CONTENT_TYPE.matcher(contentType);
       matcher.matches();

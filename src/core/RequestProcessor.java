@@ -16,7 +16,7 @@ public class RequestProcessor implements Runnable {
   private Configuration configuration;
   private Map<Pattern, Handler> handlers;
 
-  public RequestProcessor(Socket clientSocket, Configuration configuration, Map<Pattern, Handler> handlers) {
+  RequestProcessor(Socket clientSocket, Configuration configuration, Map<Pattern, Handler> handlers) {
     this.clientSocket = clientSocket;
     this.configuration = configuration;
     this.handlers = handlers;
@@ -61,7 +61,7 @@ public class RequestProcessor implements Runnable {
           entry.getValue().handle(request, response);
   }
 
-  public void respondWithError(OutputStream out, Request request, HttpStatusCode code) throws IOException {
+  void respondWithError(OutputStream out, Request request, HttpStatusCode code) throws IOException {
     Response response = new Response(request);
     response.generateStandardResponse(code);
     out.write(response.generateMessage().getBytes(StandardCharsets.ISO_8859_1));
