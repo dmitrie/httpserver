@@ -39,7 +39,9 @@ public class ServerTest {
     body = null;
 
     LinkedHashMap<Pattern, Handler> handlers = new LinkedHashMap<>();
-    handlers.put(Pattern.compile(".*"), new FileSystemHandler("/home/kool/IdeaProjects/httpserver/test/web/"));
+
+    String resource = ServerTest.class.getResource("/web").getPath();
+    handlers.put(Pattern.compile(".*"), new FileSystemHandler(resource));
 
     startServer(handlers);
   }
@@ -62,6 +64,21 @@ public class ServerTest {
     serverThread = null;
   }
 
+  @Test
+  public void testSuccessFileReturned() throws Exception {
+    sendRequest("GET /test.html HTTP/1.1\r\nHost: localhost\r\n\r\n");
+
+    assertEquals("HTTP/1.1 " + OK, statusLine);
+    assertEquals("16", headers.get("Content-length"));
+    assertEquals("<h1>Example</h1>", body);
+  }
+
+  @Test
+  public void testRespondWithErrorRequestTimeOut() throws Exception {
+    sendRequest(null);
+    assertEquals("HTTP/1.1 " + REQUEST_TIMEOUT, statusLine);
+  }
+
   private boolean awaitCondition(long milliseconds, BooleanSupplier condition) {
     long endTime = System.currentTimeMillis() + milliseconds;
     while(System.currentTimeMillis() < endTime) {
@@ -78,7 +95,7 @@ public class ServerTest {
     return configuration;
   }
 
-  public void parseHeaders(String multipleHeaders) {
+  private void parseHeaders(String multipleHeaders) {
     if (multipleHeaders == null || "".equals(multipleHeaders.trim()))
       return;
 
@@ -91,7 +108,7 @@ public class ServerTest {
     }
   }
 
-  public void sendRequest(String request) throws IOException {
+  private void sendRequest(String request) throws IOException {
     try (
       Socket clientSocket = new Socket("localhost", 8361);
       PrintWriter out = new PrintWriter(clientSocket.getOutputStream(), true);
@@ -120,18 +137,5 @@ public class ServerTest {
     }
   }
 
-  @Test
-  public void testSuccessFileReturned() throws Exception {
-    sendRequest("GET /test.html HTTP/1.1\r\nHost: localhost\r\n\r\n");
 
-    assertEquals("HTTP/1.1 " + OK, statusLine);
-    assertEquals("16", headers.get("Content-length"));
-    assertEquals("<h1>Example</h1>", body);
-  }
-
-  @Test
-  public void testRespondWithErrorRequestTimeOut() throws Exception {
-    sendRequest(null);
-    assertEquals("HTTP/1.1 " + REQUEST_TIMEOUT, statusLine);
-  }
 }
