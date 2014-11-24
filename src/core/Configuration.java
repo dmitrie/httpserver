@@ -16,7 +16,6 @@ public class Configuration {
     add("HTTP/1.0");
     add("HTTP/1.1");
   }};
-  private boolean absoluteUriIsAllowed = false;
   private int numberOfThreads = 10;
 
   public int getMaximumURILength() {
@@ -33,10 +32,6 @@ public class Configuration {
 
   public List<String> getImplementedMethods() {
     return implementedMethods;
-  }
-
-  public boolean isAbsoluteUriIsAllowed() {
-    return absoluteUriIsAllowed;
   }
 
   public int getNumberOfThreads() {
@@ -61,10 +56,6 @@ public class Configuration {
 
   public void setImplementedMethods(List<String> implementedMethods) {
     this.implementedMethods = implementedMethods;
-  }
-
-  public void setAbsoluteUriIsAllowed(boolean absoluteUriIsAllowed) {
-    this.absoluteUriIsAllowed = absoluteUriIsAllowed;
   }
 
   public void setNumberOfThreads(int numberOfThreads) {
