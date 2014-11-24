@@ -45,11 +45,6 @@ public class FileSystemHandler extends Handler {
 
         response.setHeader("Content-Type", "text/html; charset=" + response.bodyCharset);
         response.setHeader("Last-modified", getServerTime());
-
-        if ("HEAD".equals(request.requestMethod)) {
-          response.setHeader("Content-Length", "" + response.calculateContentLength());
-          response.setBody(null);
-        }
         break;
       default:
         break;
