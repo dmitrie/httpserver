@@ -16,4 +16,4 @@ Project is done in Java 8.
 
 Run core.Server.main() and navigate to http://localhost:8080/ to see a demo.
 
-P.S. Pay attention to core.Response.setBody(). It automatically sets the Content-Length header. In addition, it should be used in case of HEAD requests in the absolutely same manner as for GET requests. It automatically cuts body and leaves all the headers untouched. 
+P.S. Pay attention to core.Response.setBody(). It automatically sets the Content-Length header. In addition, it should be used in case of HEAD requests in the absolutely same manner as for GET requests. It automatically cuts body and leaves all the headers untouched. It is done to make sure that headers of responses sent to GET and HEAD requests are identical as specified in RFC2616.  
