@@ -4,7 +4,7 @@ This Http Server is a learning project, it is not maintained, so use it on your 
 
 Basic functionality:
 
- - Server parses and validates incoming headers according to RFC2616 and allows to send back a response.
+ - Server parses and validates incoming message according to RFC2616 and allows to send back a response.
  - Server is multi-threaded.
  - Server understands a different charset of incoming message body and uses ISO-8859-1 for all other operations.
  - Server correctly parses parameters of a GET request and body of a POST request sent together with application/x-www-form-urlencoded Content-Type.
